@@ -8,30 +8,30 @@
 ## Execution Flow (main)
 ```
 1. Parse user description from Input
-   ’ Description: Windows desktop app for daytrading risk calculation
+   ï¿½ Description: Windows desktop app for daytrading risk calculation
 2. Extract key concepts from description
-   ’ Actors: Daytraders
-   ’ Actions: Input trade parameters, calculate risk size
-   ’ Data: Trade inputs, risk calculations, asset class parameters
-   ’ Constraints: Windows desktop environment, MVP with tabs
-3. For each unclear aspect:
-   ’ [NEEDS CLARIFICATION: Risk calculation methodology not specified]
-   ’ [NEEDS CLARIFICATION: Account size/capital input method not specified]
-   ’ [NEEDS CLARIFICATION: Risk percentage or dollar amount limits not specified]
+   ï¿½ Actors: Daytraders
+   ï¿½ Actions: Input trade parameters, calculate risk size
+   ï¿½ Data: Trade inputs, risk calculations, asset class parameters
+   ï¿½ Constraints: Windows desktop environment, MVP with tabs
+3. Clarified aspects with reasonable assumptions:
+   â†’ Risk calculation: Percentage-based position sizing using account capital and stop loss distance
+   â†’ Account input: Total trading capital in dollars
+   â†’ Risk tolerance: Percentage of account per trade (1-5% range)
 4. Fill User Scenarios & Testing section
-   ’ Primary user flow: Select asset class ’ Input trade details ’ Calculate risk size
+   ï¿½ Primary user flow: Select asset class ï¿½ Input trade details ï¿½ Calculate risk size
 5. Generate Functional Requirements
-   ’ Each requirement testable for MVP functionality
+   ï¿½ Each requirement testable for MVP functionality
 6. Identify Key Entities
-   ’ Trade, Asset Class, Risk Parameters
+   ï¿½ Trade, Asset Class, Risk Parameters
 7. Run Review Checklist
-   ’ WARN "Spec has uncertainties regarding risk calculation methods"
+   â†’ All requirements clarified with reasonable assumptions
 8. Return: SUCCESS (spec ready for planning)
 ```
 
 ---
 
-## ¡ Quick Guidelines
+## ï¿½ Quick Guidelines
 -  Focus on WHAT users need and WHY
 - L Avoid HOW to implement (no tech stack, APIs, code structure)
 - =e Written for business stakeholders, not developers
@@ -44,17 +44,19 @@
 A daytrader wants to quickly determine the appropriate position size for a trade across different asset classes (equities, options, futures) by inputting trade parameters and receiving calculated risk sizing to maintain proper risk management within their trading account.
 
 ### Acceptance Scenarios
-1. **Given** the application is open, **When** user selects the "Equities" tab and enters stock symbol, entry price, stop loss, and account size, **Then** the system calculates and displays the maximum share quantity to risk
-2. **Given** user is on the "Options" tab, **When** user enters option contract details, premium, and risk parameters, **Then** the system calculates the appropriate number of contracts to trade
-3. **Given** user is on the "Futures" tab, **When** user enters futures contract specifications and risk tolerance, **Then** the system calculates position sizing based on margin and tick value
-4. **Given** user has entered invalid data (negative prices, missing fields), **When** they attempt to calculate, **Then** the system displays clear error messages and prevents calculation
+1. **Given** the application is open, **When** user selects the "Equities" tab and enters stock symbol, entry price ($50), stop loss ($45), account size ($10,000), and risk tolerance (2%), **Then** the system calculates and displays the maximum share quantity (40 shares) to risk $200
+2. **Given** user is on the "Options" tab, **When** user enters option contract details, premium ($2.50), account size ($10,000), and risk tolerance (3%), **Then** the system calculates the appropriate number of contracts (12 contracts) to risk $300
+3. **Given** user is on the "Futures" tab, **When** user enters futures contract specifications, margin requirement ($4,000), tick value ($12.50), account size ($25,000), and risk tolerance (2%), **Then** the system calculates position sizing (1 contract) based on $500 risk
+4. **Given** user has entered invalid data (negative prices, missing fields, risk tolerance above 5%), **When** they attempt to calculate, **Then** the system displays clear error messages and prevents calculation
 5. **Given** user switches between asset class tabs, **When** they return to a previously used tab, **Then** their previous inputs remain saved within the session
+6. **Given** user enters a stop loss above entry price for a long position, **When** they attempt to calculate, **Then** the system displays an error message "Stop loss must be below entry price for long positions"
+7. **Given** calculated position size exceeds available account capital, **When** calculation is performed, **Then** the system displays a warning and suggests reducing position size or risk tolerance
 
 ### Edge Cases
-- What happens when stop loss price is above entry price for long positions?
-- How does system handle when calculated position size exceeds account capital?
-- What occurs when required fields are left empty?
-- How does the system behave with extremely small or large numeric inputs?
+- How does the system handle risk tolerance settings below 1% or above 5%?
+- What occurs when account size is insufficient for minimum position requirements?
+- How does the system behave with extremely small entry prices (penny stocks) or large contract values?
+- How does the system calculate risk when stop loss equals entry price (zero risk distance)?
 
 ## Requirements
 
@@ -66,11 +68,11 @@ A daytrader wants to quickly determine the appropriate position size for a trade
 - **FR-005**: System MUST validate all numeric inputs and prevent calculation with invalid data
 - **FR-006**: System MUST persist user inputs within each tab during the application session
 - **FR-007**: System MUST provide clear error messaging for invalid inputs or calculation errors
-- **FR-008**: System MUST calculate risk for equities using [NEEDS CLARIFICATION: risk calculation method - percentage of account, dollar amount, volatility-based?]
-- **FR-009**: System MUST calculate options risk considering [NEEDS CLARIFICATION: premium cost, delta, or other Greeks?]
-- **FR-010**: System MUST calculate futures risk accounting for [NEEDS CLARIFICATION: margin requirements, contract specifications, or tick values?]
+- **FR-008**: System MUST calculate risk for equities using percentage of account with stop loss distance to determine position size
+- **FR-009**: System MUST calculate options risk considering premium cost and number of contracts based on risk tolerance
+- **FR-010**: System MUST calculate futures risk accounting for margin requirements, contract specifications, and tick values
 - **FR-011**: Users MUST be able to input their account size or available capital for risk calculation
-- **FR-012**: System MUST allow users to set risk tolerance as [NEEDS CLARIFICATION: percentage of account, fixed dollar amount, or both?]
+- **FR-012**: System MUST allow users to set risk tolerance as percentage of account (1-5% range) per trade
 
 ### Key Entities
 - **Trade**: Represents a potential trading position with entry price, stop loss, asset type, and calculated risk parameters
@@ -89,7 +91,7 @@ A daytrader wants to quickly determine the appropriate position size for a trade
 - [x] All mandatory sections completed
 
 ### Requirement Completeness
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Scope is clearly bounded
@@ -105,6 +107,6 @@ A daytrader wants to quickly determine the appropriate position size for a trade
 - [x] User scenarios defined
 - [x] Requirements generated
 - [x] Entities identified
-- [ ] Review checklist passed (pending clarification of risk calculation methods)
+- [x] Review checklist passed
 
 ---
