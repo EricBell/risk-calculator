@@ -48,41 +48,41 @@ tests/
 ```
 
 ## Phase 3.1: Setup
-- [ ] T001 Create Python project structure in risk_calculator/ with models/, views/, controllers/, services/ directories
-- [ ] T002 Create Python virtual environment (python -m venv .venv) and initialize requirements.txt (pytest>=7.0.0, pytest-mock>=3.10.0)
-- [ ] T003 [P] Configure pytest.ini and setup.py for cross-platform testing
+- [x] T001 Create Python project structure in risk_calculator/ with models/, views/, controllers/, services/ directories
+- [x] T002 Create Python virtual environment (python -m venv .venv) and initialize requirements.txt (pytest>=7.0.0, pytest-mock>=3.10.0)
+- [x] T003 [P] Configure pytest.ini and setup.py for cross-platform testing
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
 ### Contract Tests [P] - Different service contracts
-- [ ] T004 [P] Contract test RiskCalculationService.calculate_equity_position() in tests/contract/test_risk_calculation_service.py
-- [ ] T005 [P] Contract test TradeValidationService.validate_equity_trade() in tests/contract/test_validation_service.py
-- [ ] T006 [P] Contract test EquityController.calculate_position() in tests/contract/test_equity_controller.py
-- [ ] T007 [P] Contract test EquityTab Tkinter view bindings in tests/contract/test_equity_view.py
+- [x] T004 [P] Contract test RiskCalculationService.calculate_equity_position() in tests/contract/test_risk_calculation_service.py
+- [x] T005 [P] Contract test TradeValidationService.validate_equity_trade() in tests/contract/test_validation_service.py
+- [x] T006 [P] Contract test EquityController.calculate_position() in tests/contract/test_equity_controller.py
+- [x] T007 [P] Contract test EquityTab Tkinter view bindings in tests/contract/test_equity_view.py
 
 ### Integration Tests [P] - Different acceptance scenarios
-- [ ] T008 [P] Integration test percentage-based equity calculation in tests/integration/test_percentage_method.py
-- [ ] T009 [P] Integration test fixed amount risk calculation in tests/integration/test_fixed_amount_method.py
-- [ ] T010 [P] Integration test level-based risk calculation in tests/integration/test_level_based_method.py
-- [ ] T011 [P] Integration test risk method switching UI in tests/integration/test_method_switching.py
-- [ ] T012 [P] Integration test clear functionality in tests/integration/test_clear_functionality.py
+- [x] T008 [P] Integration test percentage-based equity calculation in tests/integration/test_percentage_method.py
+- [x] T009 [P] Integration test fixed amount risk calculation in tests/integration/test_fixed_amount_method.py
+- [x] T010 [P] Integration test level-based risk calculation in tests/integration/test_level_based_method.py
+- [x] T011 [P] Integration test risk method switching UI in tests/integration/test_method_switching.py
+- [x] T012 [P] Integration test clear functionality in tests/integration/test_clear_functionality.py
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 
 ### Data Models [P] - Different model files
-- [ ] T013 [P] RiskMethod enum in risk_calculator/models/risk_method.py
-- [ ] T014 [P] Base Trade abstract class in risk_calculator/models/trade.py
-- [ ] T015 [P] EquityTrade model with calculation logic in risk_calculator/models/equity_trade.py
-- [ ] T016 [P] OptionTrade model with contract multiplier in risk_calculator/models/option_trade.py
-- [ ] T017 [P] FutureTrade model with tick calculations in risk_calculator/models/future_trade.py
-- [ ] T018 [P] ValidationResult dataclass in risk_calculator/models/validation_result.py
-- [ ] T019 [P] CalculationResult dataclass in risk_calculator/models/calculation_result.py
+- [x] T013 [P] RiskMethod enum in risk_calculator/models/risk_method.py
+- [x] T014 [P] Base Trade abstract class in risk_calculator/models/trade.py
+- [x] T015 [P] EquityTrade model with calculation logic in risk_calculator/models/equity_trade.py
+- [x] T016 [P] OptionTrade model with contract multiplier in risk_calculator/models/option_trade.py
+- [x] T017 [P] FutureTrade model with tick calculations in risk_calculator/models/future_trade.py
+- [x] T018 [P] ValidationResult dataclass in risk_calculator/models/validation_result.py
+- [x] T019 [P] CalculationResult dataclass in risk_calculator/models/calculation_result.py
 
 ### Service Layer [P] - Different service files
-- [ ] T020 [P] RiskCalculationService with all three calculation methods in risk_calculator/services/risk_calculator.py
-- [ ] T021 [P] TradeValidationService with method-specific validation in risk_calculator/services/validators.py
-- [ ] T022 [P] RealTimeValidationService for Tkinter field validation in risk_calculator/services/realtime_validator.py
+- [x] T020 [P] RiskCalculationService with all three calculation methods in risk_calculator/services/risk_calculator.py
+- [x] T021 [P] TradeValidationService with method-specific validation in risk_calculator/services/validators.py
+- [x] T022 [P] RealTimeValidationService for Tkinter field validation in risk_calculator/services/realtime_validator.py
 
 ### Controller Layer - Sequential (shared dependencies)
 - [ ] T023 BaseController abstract class with Tkinter variable management in risk_calculator/controllers/base_controller.py
