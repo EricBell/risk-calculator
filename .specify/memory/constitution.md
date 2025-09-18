@@ -18,7 +18,7 @@ Platform accessibility standards compliance; Keyboard navigation support; Screen
 Support Windows 10+ and modern Linux distributions; Python runtime dependency management; Graceful handling of missing system components; Cross-platform executable distribution.
 
 ## File Structure
-Project files organized in logical directories; Models, Views, ViewModels separation maintained; Build process outputs to single executable or installer package.
+Project files organized in logical directories; Models, Views, Controllers separation maintained; Build process outputs to single executable or installer package.
 
 ## Deployment
 Single executable or installer package deployment; No server configuration required; Cross-platform distribution (Windows .exe, Linux binary); Python runtime bundling options.
@@ -26,4 +26,4 @@ Single executable or installer package deployment; No server configuration requi
 ## Governance
 Constitution defines minimum viable cross-platform desktop app standards; Changes require testing on target platforms (Windows and Linux); Performance budgets must be maintained.
 
-**Version**: 2.1.0 | **Ratified**: 2025-09-17 | **Last Amended**: 2025-09-18
+**Version**: 2.1.1 | **Ratified**: 2025-09-17 | **Last Amended**: 2025-09-18
