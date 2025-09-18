@@ -49,7 +49,7 @@ tests/
 
 ## Phase 3.1: Setup
 - [ ] T001 Create Python project structure in risk_calculator/ with models/, views/, controllers/, services/ directories
-- [ ] T002 Initialize Python 3.12+ project with requirements.txt (pytest>=7.0.0, pytest-mock>=3.10.0)
+- [ ] T002 Create Python virtual environment (python -m venv .venv) and initialize requirements.txt (pytest>=7.0.0, pytest-mock>=3.10.0)
 - [ ] T003 [P] Configure pytest.ini and setup.py for cross-platform testing
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
