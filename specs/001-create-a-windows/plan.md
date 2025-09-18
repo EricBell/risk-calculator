@@ -1,5 +1,5 @@
 
-# Implementation Plan: Windows Desktop Risk Calculator for Daytrading
+# Implementation Plan: Cross-Platform Desktop Risk Calculator for Daytrading
 
 **Branch**: `001-create-a-windows` | **Date**: 2025-09-17 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/001-create-a-windows/spec.md`
@@ -31,38 +31,35 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Windows desktop application for daytrading risk calculation with tabbed interface for equities, options, and futures. Uses percentage-based position sizing calculations with account capital and stop loss distance. Built with C# and WPF for Windows desktop environment with Visual Studio development toolchain.
+Cross-platform desktop application for daytrading risk calculation with tabbed interface for equities, options, and futures. Uses percentage-based position sizing calculations with account capital and stop loss distance. Built with Python and Tkinter for Windows and Linux desktop environments with modern Python development toolchain.
 
 ## Technical Context
-**Language/Version**: C# 12 / .NET 8.0
-**Primary Dependencies**: WPF (Windows Presentation Foundation), MVVM Community Toolkit, System.ComponentModel.DataAnnotations
+**Language/Version**: Python 3.12+
+**Primary Dependencies**: Python standard library (tkinter, decimal, dataclasses, typing)
 **Storage**: N/A (session-based input persistence only)
-**Testing**: NUnit, Moq for mocking, WPF Application Framework
-**Target Platform**: Windows 10+ (.NET 8.0 desktop runtime)
-**Project Type**: single (desktop application)
+**Testing**: pytest, pytest-mock for mocking, standard unittest framework
+**Target Platform**: Windows 10+ and Linux (Python 3.12+ runtime)
+**Project Type**: single (cross-platform desktop application)
 **Performance Goals**: <100ms calculation response time, <50MB memory usage
-**Constraints**: Windows-only, offline-capable, single-user desktop application
+**Constraints**: Cross-platform (Windows/Linux), offline-capable, single-user desktop application
 **Scale/Scope**: 3 tabs, 12 input fields per tab, local calculations only
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**Constitutional Conflict Detected**: The repository constitution mandates static-first web applications, but user requirements explicitly specify Windows desktop application with C#.
+**Constitutional Conflict Analysis**: The repository constitution emphasizes native Windows desktop applications, now transitioning to cross-platform Python desktop application.
 
 **Analysis of Constitution Compliance**:
-- ❌ **Static-First**: Desktop apps require native frameworks (WPF), not static web
-- ❌ **Browser Compatibility**: Desktop apps run natively, not in browsers
-- ❌ **Responsive Design**: Desktop apps use native UI controls, not responsive web design
-- ✅ **Performance**: Desktop apps can meet <3s startup and performance goals
-- ✅ **Accessibility**: WPF supports accessibility through Windows APIs
-- ❌ **Deployment**: Desktop apps require installation, not static hosting
+- ✅ **Desktop-First**: Python desktop app maintains local processing and native UI
+- ✅ **Performance**: Python can meet <3s startup and <50MB memory goals
+- ✅ **Platform Compatibility**: Now supports both Windows and Linux platforms
+- ✅ **Native UI Design**: Tkinter provides native look and feel on each platform
+- ✅ **Accessibility**: Tkinter supports accessibility through platform APIs
+- ✅ **Deployment**: Single executable deployment maintained via PyInstaller
 
-**Recommendation**: Either:
-1. **Modify requirement** to web application (React/Vue with static deployment)
-2. **Update constitution** to support desktop applications
-3. **Proceed with desktop** and document constitutional deviation
+**Enhancement**: Expanding platform support from Windows-only to Windows + Linux while maintaining constitutional compliance for desktop applications.
 
-**Decision**: Proceeding with desktop application as explicitly requested by user, documenting deviation in Complexity Tracking.
+**Decision**: Proceeding with cross-platform desktop application, enhancing the original Windows-only requirement with broader platform support.
 
 ## Project Structure
 
@@ -80,11 +77,11 @@ specs/[###-feature]/
 ### Source Code (repository root)
 ```
 # Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+risk_calculator/
+├── models/          # Trade data models and business logic
+├── views/           # Tkinter UI components and windows
+├── controllers/     # Application controllers and event handling
+└── services/        # Risk calculation and validation services
 
 tests/
 ├── contract/
@@ -199,11 +196,11 @@ ios/ or android/
 ## Complexity Tracking
 *Fill ONLY if Constitution Check has violations that must be justified*
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| Desktop app vs Static web | User explicitly requested Windows desktop app with C# | Web app would not meet Windows native UI requirements and user's technology preference |
-| WPF framework vs vanilla HTML/CSS | Desktop native controls required for professional appearance | Web technologies cannot provide native Windows look/feel and system integration |
-| .NET runtime dependency vs browser-only | Windows desktop requires .NET runtime for native performance | Browser-based solution would lack desktop integration and native performance |
+| Enhancement | Why Beneficial | Previous Limitation Addressed |
+|-------------|----------------|------------------------------|
+| Cross-platform vs Windows-only | User requested Linux support in addition to Windows | Windows-only solution limited user's deployment options |
+| Python vs C#/.NET | Better cross-platform compatibility and simpler deployment | C#/.NET required complex cross-platform setup and larger runtime dependencies |
+| Tkinter vs WPF | Native look on both Windows and Linux platforms | WPF limited to Windows, couldn't support Linux requirement |
 
 
 ## Progress Tracking

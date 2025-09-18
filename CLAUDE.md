@@ -1,29 +1,30 @@
 # Claude Code Context: Risk Calculator
 
 ## Project Overview
-Windows desktop application for daytrading risk calculation using C# and WPF. Provides tabbed interface for calculating position sizes across equities, options, and futures based on account risk tolerance.
+Cross-platform desktop application for daytrading risk calculation using Python and Tkinter. Runs on Windows and Linux. Provides tabbed interface for calculating position sizes across equities, options, and futures based on account risk tolerance.
 
 ## Tech Stack
-- **Language**: C# 12 / .NET 8.0
-- **UI Framework**: WPF (Windows Presentation Foundation)
-- **Architecture**: MVVM with CommunityToolkit.Mvvm
-- **Testing**: NUnit with Moq
-- **Target**: Windows 10+ desktop application
+- **Language**: Python 3.12+
+- **UI Framework**: Tkinter (Python standard library)
+- **Architecture**: MVC with separation of concerns
+- **Testing**: pytest with unittest.mock
+- **Target**: Windows 10+ and Linux desktop application
 
 ## Key Dependencies
-- CommunityToolkit.Mvvm (source generators, commands)
-- System.ComponentModel.DataAnnotations (validation)
-- NUnit (testing framework)
-- Moq (mocking for tests)
+- Python 3.12+ standard library (tkinter, decimal, dataclasses, typing)
+- pytest (testing framework)
+- pytest-mock (mocking for tests)
+- PyInstaller (deployment packaging)
 
 ## Project Structure
 ```
-RiskCalculator.Desktop/
-├── Models/           # Trade data models (EquityTrade, OptionTrade, FutureTrade)
-├── ViewModels/       # MVVM view models with commands and validation
-├── Views/            # WPF user controls and windows
-├── Services/         # Risk calculation and validation services
-└── Validators/       # Business rule validation logic
+risk_calculator/
+├── main.py                    # Application entry point
+├── models/                    # Trade data models (EquityTrade, OptionTrade, FutureTrade)
+├── views/                     # Tkinter UI components and windows
+├── controllers/               # Application controllers and event handling
+├── services/                  # Risk calculation and validation services
+└── tests/                     # Unit and integration tests
 ```
 
 ## Current Status
@@ -51,6 +52,6 @@ RiskCalculator.Desktop/
 Ready for `/tasks` command to generate implementation tasks from design artifacts.
 
 ## Recent Changes
+- 2025-09-18: Updated specifications from Windows-only C#/.NET to cross-platform Python
 - 2025-09-17: Initial feature specification and planning complete
 - 2025-09-17: Architecture research and technology stack decisions
-- 2025-09-17: Data model and service contracts defined

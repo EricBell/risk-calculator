@@ -1,19 +1,19 @@
-# Feature Specification: Windows Desktop Risk Calculator for Daytrading
+# Feature Specification: Cross-Platform Desktop Risk Calculator for Daytrading
 
 **Feature Branch**: `001-create-a-windows`
 **Created**: 2025-09-17
 **Status**: Draft
-**Input**: User description: "Create a windows desktop app taking inputs for daytrading trades, calculate the risk size for equities, options and futures. The mvp has tabs, one for each of the asset classes just enumerated."
+**Input**: User description: "Create a cross-platform desktop app (Windows and Linux) taking inputs for daytrading trades, calculate the risk size for equities, options and futures. The mvp has tabs, one for each of the asset classes just enumerated."
 
 ## Execution Flow (main)
 ```
 1. Parse user description from Input
-   � Description: Windows desktop app for daytrading risk calculation
+   � Description: Cross-platform desktop app for daytrading risk calculation
 2. Extract key concepts from description
    � Actors: Daytraders
    � Actions: Input trade parameters, calculate risk size
    � Data: Trade inputs, risk calculations, asset class parameters
-   � Constraints: Windows desktop environment, MVP with tabs
+   � Constraints: Windows and Linux desktop environment, MVP with tabs
 3. Clarified aspects with reasonable assumptions:
    → Risk calculation: Percentage-based position sizing using account capital and stop loss distance
    → Account input: Total trading capital in dollars

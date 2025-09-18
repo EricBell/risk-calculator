@@ -1,194 +1,257 @@
-# View Model Contracts
+# Controller Contracts
 
-## Base View Model Contract
+## Base Controller Contract
 
-### Interface: IBaseViewModel
-```csharp
-public interface IBaseViewModel : INotifyPropertyChanged
-{
-    bool IsBusy { get; }
-    bool HasErrors { get; }
-    ValidationResult ValidationResult { get; }
-}
+### Class: BaseController
+```python
+from abc import ABC, abstractmethod
+from typing import Optional
+from models.validation_result import ValidationResult
+
+class BaseController(ABC):
+    def __init__(self):
+        self.is_busy: bool = False
+        self.has_errors: bool = False
+        self.validation_result: Optional[ValidationResult] = None
 ```
 
 **Property Contracts**:
-- `IsBusy`: True during calculation operations, false otherwise
-- `HasErrors`: True when validation fails, false when all inputs valid
-- `ValidationResult`: Current validation state with error messages
+- `is_busy`: True during calculation operations, False otherwise
+- `has_errors`: True when validation fails, False when all inputs valid
+- `validation_result`: Current validation state with error messages
 
 **Event Contracts**:
-- `PropertyChanged`: Raised when any property value changes
-- Must provide property name for UI binding updates
+- Controllers notify views of state changes via callback functions
+- Must provide specific property updates for UI refresh
 
-## Equity View Model Contract
+## Equity Controller Contract
 
-### Interface: IEquityViewModel : IBaseViewModel
-```csharp
-public interface IEquityViewModel : IBaseViewModel
-{
-    EquityTrade Trade { get; set; }
-    CalculationResult CalculationResult { get; }
-    ICommand CalculateCommand { get; }
-    ICommand ClearCommand { get; }
-}
+### Class: EquityController(BaseController)
+```python
+from models.equity_trade import EquityTrade
+from models.calculation_result import CalculationResult
+
+class EquityController(BaseController):
+    def __init__(self, view, risk_service, validation_service):
+        super().__init__()
+        self.trade: EquityTrade = EquityTrade()
+        self.calculation_result: Optional[CalculationResult] = None
+        self.view = view
+        self.risk_service = risk_service
+        self.validation_service = validation_service
 ```
 
 **Property Contracts**:
-- `Trade`: Current equity trade data with validation
-- `CalculationResult`: Result of last calculation attempt
-- All changes to Trade properties trigger validation
+- `trade`: Current equity trade data with validation
+- `calculation_result`: Result of last calculation attempt
+- All changes to trade properties trigger validation
 
-**Command Contracts**:
+**Method Contracts**:
 
-#### CalculateCommand
-- **CanExecute**: Returns true when Trade is valid and not busy
-- **Execute**:
-  1. Sets IsBusy = true
-  2. Validates Trade inputs
+#### calculate_position()
+```python
+def calculate_position(self) -> None:
+```
+- **Preconditions**: Trade inputs are valid and controller not busy
+- **Process**:
+  1. Sets is_busy = True
+  2. Validates trade inputs
   3. Calls risk calculation service
-  4. Updates CalculationResult
-  5. Sets IsBusy = false
-- **Execution Time**: < 100ms for all calculations
+  4. Updates calculation_result
+  5. Notifies view of changes
+  6. Sets is_busy = False
 
-#### ClearCommand
-- **CanExecute**: Always returns true
-- **Execute**:
-  1. Resets all Trade properties to default values
-  2. Clears ValidationResult
-  3. Clears CalculationResult
-  4. Triggers PropertyChanged for all affected properties
-
-**Validation Behavior**:
-- Real-time validation on property changes
-- Error indicators update immediately
-- Calculate button disabled when validation fails
-
-## Option View Model Contract
-
-### Interface: IOptionViewModel : IBaseViewModel
-```csharp
-public interface IOptionViewModel : IBaseViewModel
-{
-    OptionTrade Trade { get; set; }
-    CalculationResult CalculationResult { get; }
-    ICommand CalculateCommand { get; }
-    ICommand ClearCommand { get; }
-}
+#### clear_inputs()
+```python
+def clear_inputs(self) -> None:
 ```
+- **Process**:
+  1. Resets trade to default values
+  2. Clears calculation_result
+  3. Resets validation_result
+  4. Notifies view of changes
 
-**Behavior**: Same as EquityViewModel but operates on OptionTrade data
-
-**Specific Validation**:
-- ContractMultiplier defaults to 100
-- Premium validation for reasonable option values
-- Risk calculation based on total premium cost
-
-## Future View Model Contract
-
-### Interface: IFutureViewModel : IBaseViewModel
-```csharp
-public interface IFutureViewModel : IBaseViewModel
-{
-    FutureTrade Trade { get; set; }
-    CalculationResult CalculationResult { get; }
-    ICommand CalculateCommand { get; }
-    ICommand ClearCommand { get; }
-}
+#### validate_input(field_name: str, value: any) -> bool
+```python
+def validate_input(self, field_name: str, value: any) -> bool:
 ```
+- **Purpose**: Real-time validation for individual field changes
+- **Returns**: True if field is valid, False otherwise
+- **Side Effects**: Updates validation_result with field-specific errors
 
-**Behavior**: Same as EquityViewModel but operates on FutureTrade data
+## Option Controller Contract
 
-**Specific Validation**:
-- Tick size and tick value coordinate validation
-- Margin requirement vs. account size warnings
-- Complex risk calculation with multiple parameters
+### Class: OptionController(BaseController)
+```python
+from models.option_trade import OptionTrade
 
-## Main View Model Contract
-
-### Interface: IMainViewModel : INotifyPropertyChanged
-```csharp
-public interface IMainViewModel : INotifyPropertyChanged
-{
-    int SelectedTabIndex { get; set; }
-    IEquityViewModel EquityViewModel { get; }
-    IOptionViewModel OptionViewModel { get; }
-    IFutureViewModel FutureViewModel { get; }
-}
+class OptionController(BaseController):
+    def __init__(self, view, risk_service, validation_service):
+        super().__init__()
+        self.trade: OptionTrade = OptionTrade()
+        self.calculation_result: Optional[CalculationResult] = None
 ```
 
 **Property Contracts**:
-- `SelectedTabIndex`: 0=Equities, 1=Options, 2=Futures
-- Individual view models maintain independent state
-- Tab switching preserves individual tab data
+- `trade`: Current option trade data with validation
+- `calculation_result`: Result of last calculation attempt
+- All changes to trade properties trigger validation
 
-**Behavior Contracts**:
-- Tab switching does not clear other tab data
-- Each tab view model operates independently
-- No cross-tab data sharing or validation
+**Method Contracts**:
 
-## UI Binding Contracts
+#### calculate_position()
+```python
+def calculate_position(self) -> None:
+```
+- **Preconditions**: Trade inputs are valid and controller not busy
+- **Process**: Same as EquityController but uses option-specific calculations
 
-### Input Field Bindings
-```xml
-<!-- Text input with validation -->
-<TextBox Text="{Binding Trade.EntryPrice, UpdateSourceTrigger=PropertyChanged,
-                ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
+#### clear_inputs()
+```python
+def clear_inputs(self) -> None:
+```
+- **Process**: Same as EquityController but resets option-specific fields
 
-<!-- Error display -->
-<TextBlock Text="{Binding ValidationResult.ErrorMessages[0]}"
-           Visibility="{Binding HasErrors, Converter={StaticResource BoolToVisibilityConverter}}" />
+#### validate_input(field_name: str, value: any) -> bool
+```python
+def validate_input(self, field_name: str, value: any) -> bool:
+```
+- **Purpose**: Real-time validation for option-specific fields
+- **Returns**: True if field is valid, False otherwise
 
-<!-- Calculate button -->
-<Button Content="Calculate" Command="{Binding CalculateCommand}"
-        IsEnabled="{Binding CalculateCommand.CanExecute}" />
+## Future Controller Contract
+
+### Class: FutureController(BaseController)
+```python
+from models.future_trade import FutureTrade
+
+class FutureController(BaseController):
+    def __init__(self, view, risk_service, validation_service):
+        super().__init__()
+        self.trade: FutureTrade = FutureTrade()
+        self.calculation_result: Optional[CalculationResult] = None
 ```
 
-**Binding Requirements**:
-- `UpdateSourceTrigger=PropertyChanged` for real-time validation
-- `ValidatesOnDataErrors=True` for built-in validation support
-- Error message display with proper visibility binding
-- Command binding with CanExecute state management
+**Property Contracts**:
+- `trade`: Current futures trade data with validation
+- `calculation_result`: Result of last calculation attempt
+- All changes to trade properties trigger validation
 
-### Result Display Bindings
-```xml
-<!-- Calculation results -->
-<TextBlock Text="{Binding CalculationResult.PositionSize, StringFormat='{0:N0} shares'}"
-           Visibility="{Binding CalculationResult.IsSuccess, Converter={StaticResource BoolToVisibilityConverter}}" />
+**Method Contracts**:
 
-<TextBlock Text="{Binding CalculationResult.EstimatedRisk, StringFormat='${0:N2}'}"
-           Visibility="{Binding CalculationResult.IsSuccess, Converter={StaticResource BoolToVisibilityConverter}}" />
+#### calculate_position()
+```python
+def calculate_position(self) -> None:
+```
+- **Preconditions**: Trade inputs are valid and controller not busy
+- **Process**: Same as EquityController but uses futures-specific calculations
 
-<!-- Error display -->
-<TextBlock Text="{Binding CalculationResult.ErrorMessage}"
-           Foreground="Red"
-           Visibility="{Binding CalculationResult.IsSuccess, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+#### clear_inputs()
+```python
+def clear_inputs(self) -> None:
+```
+- **Process**: Same as EquityController but resets futures-specific fields
+
+#### validate_input(field_name: str, value: any) -> bool
+```python
+def validate_input(self, field_name: str, value: any) -> bool:
+```
+- **Purpose**: Real-time validation for futures-specific fields
+- **Returns**: True if field is valid, False otherwise
+
+## Main Application Controller Contract
+
+### Class: MainController
+```python
+class MainController:
+    def __init__(self, main_view):
+        self.main_view = main_view
+        self.equity_controller = EquityController(...)
+        self.option_controller = OptionController(...)
+        self.future_controller = FutureController(...)
+        self.current_tab: str = "equity"
 ```
 
-**Display Requirements**:
-- Conditional visibility based on calculation success
-- Proper formatting for numeric results
-- Error messages in distinguishable color/style
-- Clear visual hierarchy for results vs. errors
+**Property Contracts**:
+- `current_tab`: Currently active tab ("equity", "option", "future")
+- References to all tab-specific controllers
 
-## Testing Contracts
+**Method Contracts**:
 
-### View Model Unit Tests
-Each view model must test:
-1. **Property change notifications**: Verify PropertyChanged events
-2. **Command execution**: Test CanExecute and Execute behavior
-3. **Validation triggering**: Ensure validation runs on property changes
-4. **Error state management**: Verify HasErrors updates correctly
-5. **Calculation integration**: Mock service calls and verify results
+#### switch_tab(tab_name: str) -> None
+```python
+def switch_tab(self, tab_name: str) -> None:
+```
+- **Purpose**: Handle tab switching and maintain session state
+- **Process**:
+  1. Saves current tab state
+  2. Switches to new tab
+  3. Restores previous inputs for new tab
+  4. Updates current_tab property
 
-### Integration Test Requirements
-1. **UI binding tests**: Verify property changes update UI
-2. **Command binding tests**: Ensure buttons enable/disable correctly
-3. **Validation display tests**: Check error messages appear properly
-4. **Tab switching tests**: Verify state preservation across tabs
+#### get_active_controller() -> BaseController
+```python
+def get_active_controller(self) -> BaseController:
+```
+- **Purpose**: Returns the controller for currently active tab
+- **Returns**: EquityController, OptionController, or FutureController
 
-### Performance Requirements
-- Property change notifications: < 1ms per property
-- Validation execution: < 10ms per validation run
-- UI update responsiveness: < 16ms for smooth 60fps experience
-- Memory leak prevention: No retained references after tab switches
+## View Interface Contracts
+
+### View Notification Methods
+Each view must implement these methods for controller communication:
+
+#### update_calculation_result(result: CalculationResult) -> None
+```python
+def update_calculation_result(self, result: CalculationResult) -> None:
+```
+- **Purpose**: Display calculation results in the UI
+- **Process**: Updates result labels and handles error display
+
+#### update_validation_errors(errors: ValidationResult) -> None
+```python
+def update_validation_errors(self, errors: ValidationResult) -> None:
+```
+- **Purpose**: Display validation errors in the UI
+- **Process**: Shows field-specific error messages
+
+#### set_busy_state(is_busy: bool) -> None
+```python
+def set_busy_state(self, is_busy: bool) -> None:
+```
+- **Purpose**: Show/hide loading indicators during calculations
+- **Process**: Disables inputs and shows progress indicator when busy
+
+#### clear_all_inputs() -> None
+```python
+def clear_all_inputs(self) -> None:
+```
+- **Purpose**: Reset all form inputs to default values
+- **Process**: Clears all entry fields and result displays
+
+## Error Handling Contracts
+
+### Exception Handling
+All controllers must handle these exceptions:
+
+1. **ValidationError**: Invalid input data
+   - Display user-friendly error messages
+   - Highlight problematic fields
+   - Prevent calculation until resolved
+
+2. **CalculationError**: Calculation service failures
+   - Display error message to user
+   - Log error for debugging
+   - Reset calculation state
+
+3. **SystemError**: Unexpected system errors
+   - Display generic error message
+   - Log detailed error information
+   - Attempt graceful recovery
+
+### Performance Contracts
+
+1. **Response Time**: All operations must complete within 100ms
+2. **Memory Usage**: Controllers should not retain large datasets
+3. **UI Responsiveness**: Never block UI thread during operations
+4. **Cross-Platform**: All functionality must work on Windows and Linux
