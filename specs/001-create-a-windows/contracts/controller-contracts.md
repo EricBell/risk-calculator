@@ -1,70 +1,106 @@
-# Controller Contracts
+# Python/Tkinter Controller and View Contracts
 
 ## Base Controller Contract
 
 ### Class: BaseController
 ```python
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Callable
 from models.validation_result import ValidationResult
 from models.risk_method import RiskMethod
 
 class BaseController(ABC):
-    def __init__(self):
+    def __init__(self, view):
+        self.view = view
         self.is_busy: bool = False
         self.has_errors: bool = False
         self.validation_result: Optional[ValidationResult] = None
         self.current_risk_method: RiskMethod = RiskMethod.PERCENTAGE  # Default method
+        self._setup_view_bindings()
+
+    @abstractmethod
+    def _setup_view_bindings(self) -> None:
+        """Setup Tkinter variable bindings and event handlers"""
+        pass
 ```
 
 **Property Contracts**:
+- `view`: Reference to Tkinter view/frame for this controller
 - `is_busy`: True during calculation operations, False otherwise
 - `has_errors`: True when validation fails, False when all inputs valid
 - `validation_result`: Current validation state with error messages
 - `current_risk_method`: Currently selected risk calculation method
 
-**Event Contracts**:
-- Controllers notify views of state changes via callback functions
-- Must provide specific property updates for UI refresh
-- Risk method changes trigger UI layout updates
+**Tkinter Integration Contracts**:
+- Controllers manage Tkinter StringVar/IntVar/DoubleVar variables
+- Real-time validation through Tkinter variable trace callbacks
+- Risk method changes trigger widget show/hide operations
+- Error display through Tkinter Label widgets
 
 ## Equity Controller Contract
 
 ### Class: EquityController(BaseController)
 ```python
+import tkinter as tk
+from typing import Dict
 from models.equity_trade import EquityTrade
 from models.calculation_result import CalculationResult
+from services.risk_calculator import RiskCalculationService
+from services.validators import TradeValidationService
 
 class EquityController(BaseController):
-    def __init__(self, view, risk_service, validation_service):
-        super().__init__()
+    def __init__(self, view, risk_service: RiskCalculationService, validation_service: TradeValidationService):
         self.trade: EquityTrade = EquityTrade()
         self.calculation_result: Optional[CalculationResult] = None
-        self.view = view
         self.risk_service = risk_service
         self.validation_service = validation_service
+
+        # Tkinter variables for data binding
+        self.tk_vars: Dict[str, tk.Variable] = {
+            'symbol': tk.StringVar(value=''),
+            'account_size': tk.StringVar(value=''),
+            'entry_price': tk.StringVar(value=''),
+            'risk_percentage': tk.StringVar(value='2.0'),
+            'fixed_risk_amount': tk.StringVar(value=''),
+            'stop_loss_price': tk.StringVar(value=''),
+            'support_resistance_level': tk.StringVar(value=''),
+            'risk_method': tk.StringVar(value=RiskMethod.PERCENTAGE.value)
+        }
+
+        super().__init__(view)
 ```
 
 **Property Contracts**:
 - `trade`: Current equity trade data with validation
 - `calculation_result`: Result of last calculation attempt
-- All changes to trade properties trigger validation
-- Risk method selection determines which fields are required
+- `tk_vars`: Dictionary of Tkinter variables for two-way data binding
+- All Tkinter variable changes trigger real-time validation
+- Risk method selection determines which widgets are visible
 
 **Method Contracts**:
+
+#### _setup_view_bindings() -> None
+```python
+def _setup_view_bindings(self) -> None:
+```
+- **Purpose**: Setup Tkinter variable trace callbacks for real-time validation
+- **Process**:
+  1. Add trace callbacks to all tk_vars for validation
+  2. Setup risk method change handler
+  3. Bind calculate and clear button commands
+  4. Initialize widget visibility based on default risk method
 
 #### set_risk_method(method: RiskMethod) -> None
 ```python
 def set_risk_method(self, method: RiskMethod) -> None:
 ```
-- **Purpose**: Changes the risk calculation method and updates UI
+- **Purpose**: Changes the risk calculation method and updates Tkinter UI
 - **Process**:
   1. Validates method is supported for equities (all three methods supported)
-  2. Updates current_risk_method property
-  3. Clears calculation_result
-  4. Triggers UI field visibility changes
-  5. Resets validation state
-  6. Notifies view of method change
+  2. Updates current_risk_method property and tk_vars['risk_method']
+  3. Calls view.show_method_fields(method) to update widget visibility
+  4. Clears calculation_result and updates result display
+  5. Resets validation state and error labels
 
 #### calculate_position() -> None
 ```python
@@ -72,61 +108,81 @@ def calculate_position(self) -> None:
 ```
 - **Preconditions**: Trade inputs are valid for selected method and controller not busy
 - **Process**:
-  1. Sets is_busy = True
-  2. Validates trade inputs based on current_risk_method
-  3. Calls risk_service.calculate_equity_position(trade)
-  4. Updates calculation_result with method indicator
-  5. Notifies view of changes
-  6. Sets is_busy = False
+  1. Sets is_busy = True and disables calculate button
+  2. Syncs tk_vars values to trade object
+  3. Validates trade inputs based on current_risk_method
+  4. Calls risk_service.calculate_equity_position(trade)
+  5. Updates calculation_result and result text widget
+  6. Sets is_busy = False and re-enables calculate button
 
 #### clear_inputs() -> None
 ```python
 def clear_inputs(self) -> None:
 ```
 - **Process**:
-  1. Resets trade to default values (preserves risk_method)
-  2. Clears calculation_result
-  3. Resets validation_result
-  4. Maintains current risk method selection
-  5. Notifies view of changes
+  1. Resets all tk_vars to default values (preserves risk_method)
+  2. Clears trade object to default state
+  3. Clears calculation_result and result text widget
+  4. Resets validation_result and error labels
+  5. Maintains current risk method selection and widget visibility
 
-#### validate_input(field_name: str, value: any) -> bool
+#### _on_field_change(self, var_name: str, *args) -> None
 ```python
-def validate_input(self, field_name: str, value: any) -> bool:
+def _on_field_change(self, var_name: str, *args) -> None:
 ```
-- **Purpose**: Real-time validation for individual field changes
-- **Method-aware validation**: Different validation rules based on current_risk_method
-- **Returns**: True if field is valid, False otherwise
-- **Side Effects**: Updates validation_result with field-specific errors
+- **Purpose**: Tkinter variable trace callback for real-time validation
+- **Process**:
+  1. Get current value from tk_vars[var_name]
+  2. Validate field value based on current_risk_method
+  3. Update error label widget for the field
+  4. Update has_errors property and calculate button state
 
-#### get_required_fields() -> List[str]
+#### _sync_to_trade_object() -> None
 ```python
-def get_required_fields(self) -> List[str]:
+def _sync_to_trade_object(self) -> None:
 ```
-- **Purpose**: Returns list of required fields based on current risk method
-- **PERCENTAGE method**: ['symbol', 'account_size', 'risk_percentage', 'entry_price', 'stop_loss_price']
-- **FIXED_AMOUNT method**: ['symbol', 'account_size', 'fixed_risk_amount', 'entry_price', 'stop_loss_price']
-- **LEVEL_BASED method**: ['symbol', 'account_size', 'entry_price', 'support_resistance_level', 'trade_direction']
+- **Purpose**: Sync Tkinter variable values to trade data object
+- **Process**:
+  1. Convert string values to appropriate types (Decimal, etc.)
+  2. Set trade object properties from tk_vars
+  3. Handle method-specific field assignments
+  4. Apply trade direction and other enums
 
 ## Option Controller Contract
 
 ### Class: OptionController(BaseController)
 ```python
+import tkinter as tk
 from models.option_trade import OptionTrade
 
 class OptionController(BaseController):
-    def __init__(self, view, risk_service, validation_service):
-        super().__init__()
+    def __init__(self, view, risk_service: RiskCalculationService, validation_service: TradeValidationService):
         self.trade: OptionTrade = OptionTrade()
         self.calculation_result: Optional[CalculationResult] = None
+        self.risk_service = risk_service
+        self.validation_service = validation_service
         self.supported_methods = [RiskMethod.PERCENTAGE, RiskMethod.FIXED_AMOUNT]  # Level-based not supported
+
+        # Tkinter variables for options-specific fields
+        self.tk_vars: Dict[str, tk.Variable] = {
+            'option_symbol': tk.StringVar(value=''),
+            'account_size': tk.StringVar(value=''),
+            'premium': tk.StringVar(value=''),
+            'contract_multiplier': tk.StringVar(value='100'),
+            'risk_percentage': tk.StringVar(value='2.0'),
+            'fixed_risk_amount': tk.StringVar(value=''),
+            'risk_method': tk.StringVar(value=RiskMethod.PERCENTAGE.value)
+        }
+
+        super().__init__(view)
 ```
 
 **Property Contracts**:
 - `trade`: Current option trade data with validation
 - `calculation_result`: Result of last calculation attempt
 - `supported_methods`: Only PERCENTAGE and FIXED_AMOUNT methods available
-- All changes to trade properties trigger validation
+- `tk_vars`: Tkinter variables for options-specific fields (no stop loss or levels)
+- Level-based method disabled in UI (radio button disabled and shows tooltip)
 
 **Method Contracts**:
 
@@ -293,58 +349,95 @@ def sync_common_fields(self) -> None:
   2. Updates account_size in other tabs
   3. Maintains risk method selection per tab
 
-## View Interface Contracts
+## Tkinter View Interface Contracts
 
-### View Notification Methods
-Each view must implement these methods for controller communication:
+### Base View Contract
 
-#### update_calculation_result(result: CalculationResult) -> None
+### Class: BaseTradingTab(ttk.Frame)
 ```python
-def update_calculation_result(self, result: CalculationResult) -> None:
-```
-- **Purpose**: Display calculation results in the UI
-- **Process**: Updates result labels and shows which risk method was used
+import tkinter as tk
+from tkinter import ttk
+from abc import ABC, abstractmethod
+from typing import Dict, List
 
-#### update_validation_errors(errors: ValidationResult) -> None
-```python
-def update_validation_errors(self, errors: ValidationResult) -> None:
-```
-- **Purpose**: Display validation errors in the UI
-- **Process**: Shows field-specific error messages with method context
+class BaseTradingTab(ttk.Frame, ABC):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        self.widgets: Dict[str, tk.Widget] = {}
+        self.error_labels: Dict[str, tk.Label] = {}
+        self._create_widgets()
+        self._layout_widgets()
 
-#### set_busy_state(is_busy: bool) -> None
-```python
-def set_busy_state(self, is_busy: bool) -> None:
-```
-- **Purpose**: Show/hide loading indicators during calculations
-- **Process**: Disables inputs and shows progress indicator when busy
+    @abstractmethod
+    def _create_widgets(self) -> None:
+        """Create all Tkinter widgets for this tab"""
+        pass
 
-#### clear_all_inputs() -> None
-```python
-def clear_all_inputs(self) -> None:
+    @abstractmethod
+    def _layout_widgets(self) -> None:
+        """Layout widgets using grid/pack"""
+        pass
 ```
-- **Purpose**: Reset all form inputs to default values
-- **Process**: Clears all entry fields but preserves risk method selection
 
-#### update_risk_method_ui(method: RiskMethod, supported_methods: List[RiskMethod]) -> None
-```python
-def update_risk_method_ui(self, method: RiskMethod, supported_methods: List[RiskMethod]) -> None:
-```
-- **Purpose**: Update UI to reflect risk method selection
-- **Process**:
-  1. Enable/disable risk method radio buttons based on supported_methods
-  2. Show/hide relevant input fields based on selected method
-  3. Update field labels and help text
-  4. Clear fields not relevant to selected method
+### Tkinter Widget Management Methods
 
 #### show_method_fields(method: RiskMethod) -> None
 ```python
 def show_method_fields(self, method: RiskMethod) -> None:
 ```
-- **Purpose**: Show/hide input fields based on selected risk method
-- **PERCENTAGE method**: Show risk_percentage field, stop_loss fields
-- **FIXED_AMOUNT method**: Show fixed_risk_amount field, stop_loss fields
-- **LEVEL_BASED method**: Show support_resistance_level field, trade_direction selector
+- **Purpose**: Show/hide Tkinter widgets based on selected risk method
+- **Process**:
+  1. Use widget.grid_remove() to hide irrelevant fields
+  2. Use widget.grid() to show relevant fields for selected method
+  3. Update labels and tooltips for method-specific context
+- **PERCENTAGE method**: Show risk_percentage Entry, stop_loss Entry
+- **FIXED_AMOUNT method**: Show fixed_risk_amount Entry, stop_loss Entry
+- **LEVEL_BASED method**: Show support_resistance_level Entry, trade_direction Radiobuttons
+
+#### update_calculation_result(result: CalculationResult) -> None
+```python
+def update_calculation_result(self, result: CalculationResult) -> None:
+```
+- **Purpose**: Display calculation results in Tkinter Text or Label widgets
+- **Process**:
+  1. Update result text widget with formatted output
+  2. Show which risk method was used in calculation
+  3. Display position size, estimated risk, and risk amount
+  4. Use color coding for success/error states
+
+#### show_validation_errors(field_errors: Dict[str, str]) -> None
+```python
+def show_validation_errors(self, field_errors: Dict[str, str]) -> None:
+```
+- **Purpose**: Display field-specific validation errors
+- **Process**:
+  1. Update error_labels[field_name] with error text
+  2. Show/hide error labels based on validation state
+  3. Use red text color for error messages
+  4. Clear error when field becomes valid
+
+#### set_busy_state(is_busy: bool) -> None
+```python
+def set_busy_state(self, is_busy: bool) -> None:
+```
+- **Purpose**: Disable/enable UI during calculations
+- **Process**:
+  1. Set state='disabled'/'normal' on all Entry widgets
+  2. Disable/enable calculate Button
+  3. Show/hide progress indicator (optional)
+  4. Change cursor to waiting/default
+
+#### bind_to_controller_vars(tk_vars: Dict[str, tk.Variable]) -> None
+```python
+def bind_to_controller_vars(self, tk_vars: Dict[str, tk.Variable]) -> None:
+```
+- **Purpose**: Connect Tkinter Entry widgets to controller variables
+- **Process**:
+  1. Set textvariable property of Entry widgets to tk_vars
+  2. Set variable property of Radiobutton widgets to tk_vars
+  3. Ensure two-way data binding between view and controller
+  4. Setup trace callbacks for real-time validation
 
 ## Risk Method UI Behavior
 
@@ -363,35 +456,36 @@ def show_method_fields(self, method: RiskMethod) -> None:
 - Method switching clears previous calculations
 - Help text explains each method
 
-## Error Handling Contracts
+## Python Exception Handling Contracts
 
-### Method-Specific Exception Handling
-All controllers must handle these method-specific exceptions:
+### Tkinter-Specific Exception Handling
+All controllers must handle these Python/Tkinter-specific exceptions:
 
-1. **UnsupportedRiskMethodError**: Method not available for asset class
-   - Display asset-specific error message
-   - Revert to previous method selection
-   - Show available methods for current asset
+1. **tkinter.TclError**: Widget operation failures
+   - Handle widget destruction during callbacks
+   - Graceful degradation when widgets unavailable
+   - Log widget errors for debugging
 
-2. **ValidationError**: Invalid input data for selected method
-   - Display method-specific error messages
-   - Highlight problematic fields
-   - Show method requirements
+2. **decimal.InvalidOperation**: Invalid decimal conversions
+   - Display user-friendly number format errors
+   - Highlight problematic input fields
+   - Suggest correct number formats
 
-3. **CalculationError**: Calculation service failures
-   - Display error message with method context
-   - Log error for debugging
-   - Reset calculation state
+3. **ValueError**: Invalid risk method or calculation inputs
+   - Display method-specific validation messages
+   - Reset fields to last valid state
+   - Show method requirements and constraints
 
-4. **SystemError**: Unexpected system errors
-   - Display generic error message
-   - Log detailed error information
-   - Attempt graceful recovery
+4. **AttributeError**: Missing trade object properties
+   - Handle incomplete trade data gracefully
+   - Initialize missing properties with defaults
+   - Validate trade object completeness
 
-### Performance Contracts
+### Cross-Platform Performance Contracts
 
-1. **Response Time**: All operations must complete within 100ms regardless of method
-2. **Memory Usage**: Controllers should not retain large datasets
-3. **UI Responsiveness**: Method switching must be instantaneous
-4. **Cross-Platform**: All functionality must work on Windows and Linux
-5. **Method Persistence**: Risk method selection preserved during session
+1. **Response Time**: All operations must complete within 100ms on both Windows and Linux
+2. **Memory Usage**: Controllers should release Tkinter variables properly to prevent leaks
+3. **UI Responsiveness**: Tkinter widget updates must be non-blocking
+4. **Decimal Precision**: Consistent financial calculations across platforms
+5. **Method Persistence**: Risk method selection preserved during application session
+6. **Widget Cleanup**: Proper disposal of Tkinter trace callbacks and event bindings

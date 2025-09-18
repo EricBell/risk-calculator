@@ -1,9 +1,20 @@
-# Risk Calculation Service Contract
+# Risk Calculation Service Contract for Python Risk Calculator
 
 ## Class: RiskCalculationService
 
 ### Purpose
-Provides risk calculation methods for different asset classes with support for three risk calculation approaches: percentage-based, fixed amount, and level-based position sizing.
+Provides risk calculation methods for different asset classes with support for three risk calculation approaches: percentage-based, fixed amount, and level-based position sizing. Designed specifically for Python with Decimal precision and cross-platform compatibility.
+
+### Dependencies
+```python
+from decimal import Decimal, ROUND_DOWN
+from typing import Optional
+from models.equity_trade import EquityTrade
+from models.option_trade import OptionTrade
+from models.future_trade import FutureTrade
+from models.calculation_result import CalculationResult
+from models.risk_method import RiskMethod
+```
 
 ## Method Contracts
 
@@ -40,10 +51,11 @@ def calculate_equity_position(trade: EquityTrade) -> CalculationResult:
 - **PERCENTAGE**: Position size = (account_size × risk_percentage / 100) / (entry_price - stop_loss_price)
 - **FIXED_AMOUNT**: Position size = fixed_risk_amount / (entry_price - stop_loss_price)
 - **LEVEL_BASED**: Position size = (account_size × 0.02) / (entry_price - support_resistance_level)
-- Shares rounded down to whole numbers using int() function
-- Maximum position size limited by account capital
+- Shares rounded down to whole numbers using Decimal.quantize(Decimal('1'), rounding=ROUND_DOWN)
+- Maximum position size limited by account capital divided by entry price
 - Warning if position size would exceed 25% of account value
-- Use decimal.Decimal for precise financial calculations
+- All calculations use decimal.Decimal for precise financial arithmetic
+- Cross-platform decimal precision: getcontext().prec = 28 for consistency
 
 **Error Conditions**:
 - Invalid input parameters → is_success = False, error_message describes issue
@@ -251,6 +263,48 @@ def calculate_risk_amount(account_size: Decimal, risk_method: RiskMethod,
 - Ensures required parameters are provided for each method
 - Validates parameter ranges before calculation
 
+## Python Implementation Examples
+
+### Decimal Precision Setup
+```python
+from decimal import Decimal, getcontext, ROUND_DOWN
+
+class RiskCalculationService:
+    def __init__(self):
+        # Set consistent precision for cross-platform compatibility
+        getcontext().prec = 28
+        self.DEFAULT_LEVEL_RISK_PERCENTAGE = Decimal('0.02')  # 2% for level-based
+
+    def _round_position_size(self, position_size: Decimal) -> int:
+        """Round position size down to whole number"""
+        return int(position_size.quantize(Decimal('1'), rounding=ROUND_DOWN))
+
+    def _calculate_risk_amount(self, trade) -> Decimal:
+        """Calculate risk amount based on method"""
+        if trade.risk_method == RiskMethod.PERCENTAGE:
+            return trade.account_size * trade.risk_percentage / Decimal('100')
+        elif trade.risk_method == RiskMethod.FIXED_AMOUNT:
+            return trade.fixed_risk_amount
+        elif trade.risk_method == RiskMethod.LEVEL_BASED:
+            return trade.account_size * self.DEFAULT_LEVEL_RISK_PERCENTAGE
+        else:
+            raise ValueError(f"Unsupported risk method: {trade.risk_method}")
+```
+
+### Performance Contracts
+
+#### Response Time Requirements
+- All calculations MUST complete within 100ms on target hardware
+- Decimal operations optimized for financial precision over speed
+- No network calls or I/O operations in calculation methods
+- Memory usage per calculation < 1MB
+
+#### Cross-Platform Consistency
+- Identical results on Windows and Linux Python 3.12+
+- Consistent decimal precision across different architectures
+- Unicode symbol handling for international markets
+- Timezone-independent calculations (no datetime dependencies)
+
 ## Test Contracts
 
 ### Unit Test Requirements
@@ -262,8 +316,10 @@ Each calculation method must have tests for:
 4. **Invalid input handling** - Verify error messages for each method
 5. **Rounding behavior** - Ensure proper fractional handling across methods
 6. **Business rule enforcement** - Verify warnings and limits for each method
-7. **Decimal precision** - Verify financial calculation accuracy
+7. **Decimal precision** - Verify financial calculation accuracy to 2 decimal places
 8. **Method-specific validation** - Test validation rules unique to each method
+9. **Cross-platform consistency** - Same results on Windows and Linux
+10. **Performance requirements** - All calculations under 100ms
 
 ### Integration Test Scenarios
 
