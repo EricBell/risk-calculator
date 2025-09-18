@@ -74,39 +74,77 @@
 ## Financial Calculation Research
 
 ### Risk Calculation Algorithms
-**Decision**: Implement percentage-based position sizing with stop loss distance
+**Decision**: Implement three risk calculation approaches to accommodate different trading styles
 **Rationale**:
-- Industry standard approach for risk management
-- Simple formula: Position Size = (Account Risk $) / (Entry Price - Stop Loss Price)
-- Where Account Risk $ = Account Size × Risk Percentage
-- Easily understood by traders and mathematically sound
+- Multiple approaches serve different trader preferences and market conditions
+- Flexibility allows traders to adapt to various scenarios and risk management styles
+
+#### 1. Percentage-Based Position Sizing
+**Formula**: Position Size = (Account Size × Risk %) / (Entry Price - Stop Loss Price)
+**Use Case**: Traditional risk management based on account percentage
+**Benefits**: Scales with account size, maintains consistent risk ratio
+**Implementation**: Default method, risk percentage 1-5% of account
+
+#### 2. Fixed Amount Position Sizing
+**Formula**: Position Size = Fixed Risk Amount / (Entry Price - Stop Loss Price)
+**Use Case**: Consistent dollar risk per trade (e.g., $50/trade)
+**Benefits**: Predictable P&L, easier mental math, consistent risk exposure
+**Implementation**: User enters fixed dollar amount ($10-$500 range)
+**Validation**: Fixed amount should not exceed 5% of account size
+
+#### 3. Level-Based Position Sizing
+**Formula**: Position Size = Risk Amount / (Entry Price - Support/Resistance Level)
+**Use Case**: Technical analysis-driven stops at key market levels
+**Benefits**: Aligns with market structure, often provides better risk/reward
+**Long Trades**: Stop at nearest support level below entry
+**Short Trades**: Stop at nearest resistance level above entry
+**Implementation**: User selects entry price and identifies key level as stop
+
 
 ### Asset Class Specific Calculations
 
 #### Equities Position Sizing
-**Formula**: Shares = (Account Size × Risk %) / (Entry Price - Stop Loss Price)
+**All Three Methods Supported**:
+
+**Percentage-Based**: Shares = (Account Size × Risk %) / (Entry Price - Stop Loss Price)
+**Fixed Amount**: Shares = Fixed Risk Amount / (Entry Price - Stop Loss Price)
+**Level-Based**: Shares = Risk Amount / (Entry Price - Support/Resistance Level)
+
 **Implementation**: Use Python's decimal module for precision
 **Validation Rules**:
 - Entry price > 0
-- Stop loss < Entry price (for long positions)
-- Risk percentage between 1-5%
-- Account size > 0
+- Stop loss/level < Entry price (for long positions)
+- Risk percentage between 1-5% (percentage method)
+- Fixed amount $10-$500 and ≤ 5% of account (fixed method)
+- Support/resistance level must be reasonable distance from entry (level method)
 
 #### Options Position Sizing
-**Formula**: Contracts = (Account Size × Risk %) / (Premium × 100)
+**All Three Methods Supported**:
+
+**Percentage-Based**: Contracts = (Account Size × Risk %) / (Premium × 100)
+**Fixed Amount**: Contracts = Fixed Risk Amount / (Premium × 100)
+**Level-Based**: Not typically applicable for options (premium is the risk)
+
 **Implementation**: Decimal arithmetic to avoid floating point errors
 **Considerations**:
 - Each contract represents 100 shares
 - Premium is per-share cost
 - Risk calculation based on maximum loss (premium paid)
+- Level-based method disabled for options trading
 
 #### Futures Position Sizing
-**Formula**: Contracts = (Account Size × Risk %) / (Tick Value × Ticks at Risk)
+**All Three Methods Supported**:
+
+**Percentage-Based**: Contracts = (Account Size × Risk %) / (Tick Value × Ticks at Risk)
+**Fixed Amount**: Contracts = Fixed Risk Amount / (Tick Value × Ticks at Risk)
+**Level-Based**: Contracts = Risk Amount / (Tick Value × Ticks to Support/Resistance)
+
 **Implementation**: High-precision decimal calculations
 **Considerations**:
 - Margin requirements for position entry
 - Tick value varies by contract type
 - Point value calculation for different futures contracts
+- Level-based uses technical levels converted to tick distances
 
 ### Input Validation Requirements
 **Numeric Validation**:
