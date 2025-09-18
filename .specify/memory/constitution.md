@@ -2,28 +2,28 @@
 
 ## Core Principles
 
-### I. Static-First
-All functionality must work without server-side processing; JavaScript handles all calculations client-side; No backend dependencies for core features.
+### I. Desktop-First
+All functionality must work without server-side processing; Native code handles all calculations locally; No backend dependencies for core features.
 
-### II. Responsive Design
-Application must work on mobile, tablet, and desktop; Touch-friendly interface required; Viewport must scale appropriately.
+### II. Native UI Design
+Application must provide native Windows desktop experience; Mouse and keyboard optimized interface; Windows UI guidelines compliance.
 
 ### III. Performance
-Initial page load under 3 seconds; No external dependencies for core functionality; Minimal JavaScript bundle size.
+Application startup under 3 seconds; No external dependencies for core functionality; Minimal memory footprint and efficient resource usage.
 
 ### IV. Accessibility
-WCAG 2.1 AA compliance required; Keyboard navigation support; Screen reader compatibility.
+Windows accessibility standards compliance; Keyboard navigation support; Screen reader compatibility through Windows APIs.
 
-### V. Browser Compatibility
-Support modern browsers (Chrome, Firefox, Safari, Edge); Progressive enhancement approach; Graceful degradation for older browsers.
+### V. Platform Compatibility
+Support Windows 10 and later versions; .NET runtime dependency management; Graceful handling of missing system components.
 
 ## File Structure
-Static assets organized in logical directories; HTML, CSS, JS separation maintained; Build process outputs to single deployable directory.
+Project files organized in logical directories; Models, Views, ViewModels separation maintained; Build process outputs to single executable or installer package.
 
 ## Deployment
-Single directory deployment to any static hosting; No server configuration required; CDN-ready asset organization.
+Single executable or installer package deployment; No server configuration required; Self-contained or framework-dependent distribution options.
 
 ## Governance
-Constitution defines minimum viable static web app standards; Changes require testing on target deployment platforms; Performance budgets must be maintained.
+Constitution defines minimum viable Windows desktop app standards; Changes require testing on target Windows platforms; Performance budgets must be maintained.
 
-**Version**: 1.0.0 | **Ratified**: 2025-09-17 | **Last Amended**: 2025-09-17
+**Version**: 2.0.0 | **Ratified**: 2025-09-17 | **Last Amended**: 2025-09-17
