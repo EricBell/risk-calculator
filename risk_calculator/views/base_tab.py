@@ -235,9 +235,7 @@ class BaseTradingTab(ttk.Frame, ABC):
 
         self.current_method = method
 
-        # Update controller if available
-        if self.controller:
-            self.controller.set_risk_method(method)
+        # Don't call back to controller - this method is called BY the controller
 
     def show_validation_errors(self, errors: Dict[str, str]) -> None:
         """Display validation errors for fields."""
@@ -356,11 +354,16 @@ class BaseTradingTab(ttk.Frame, ABC):
         """Create aliases for test compatibility."""
         # Add _entry suffix aliases for widgets
         entry_fields = ['symbol', 'account_size', 'entry_price', 'option_symbol', 'contract_symbol',
-                       'premium', 'tick_value', 'tick_size', 'margin_requirement']
+                       'premium', 'tick_value', 'tick_size', 'margin_requirement', 'fixed_risk_amount',
+                       'risk_percentage', 'stop_loss_price', 'support_resistance_level']
 
         for field in entry_fields:
             if field in self.input_widgets:
                 self.input_widgets[f'{field}_entry'] = self.input_widgets[field]
+
+        # Add specific aliases for test compatibility
+        if 'support_resistance_level' in self.input_widgets:
+            self.input_widgets['level_entry'] = self.input_widgets['support_resistance_level']
 
         # Create method radio button aliases with expected naming
         radio_items = list(self.method_radios.items())  # Create copy to avoid iteration issues

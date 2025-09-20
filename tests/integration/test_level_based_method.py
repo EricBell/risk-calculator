@@ -33,7 +33,8 @@ class TestLevelBasedMethodIntegration:
         - Risk Amount: $200.00 (2% default)
         """
         # Given
-        app = RiskCalculatorApp(self.root)
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
         equity_controller = app.equity_controller
         equity_controller.set_risk_method(RiskMethod.LEVEL_BASED)
 
@@ -56,9 +57,10 @@ class TestLevelBasedMethodIntegration:
     def test_level_based_ui_field_visibility(self):
         """Test UI shows correct fields for level-based method"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_tab = app.equity_tab
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # When
         equity_controller.set_risk_method(RiskMethod.LEVEL_BASED)
@@ -71,7 +73,8 @@ class TestLevelBasedMethodIntegration:
     def test_level_based_direction_validation(self):
         """Test support/resistance level direction validation"""
         # Given
-        app = RiskCalculatorApp(self.root)
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
         equity_controller = app.equity_controller
         equity_controller.set_risk_method(RiskMethod.LEVEL_BASED)
 

@@ -25,7 +25,7 @@ class RiskCalculatorApp:
         """Create application components without running GUI."""
         self.main_window = MainWindow()
         self.main_controller = MainController(self.main_window)
-        self.main_window.controller = self.main_controller
+        self.main_window.set_controller(self.main_controller)
         return self.main_window, self.main_controller
 
     def run(self):
@@ -173,8 +173,8 @@ def create_application() -> tuple:
         main_controller = MainController(main_window)
         logger.info("Main controller created successfully")
 
-        # Connect controller to window
-        main_window.controller = main_controller
+        # Connect controller to window and recreate tabs with controllers
+        main_window.set_controller(main_controller)
         logger.info("Controller connected to main window")
 
         return main_window, main_controller

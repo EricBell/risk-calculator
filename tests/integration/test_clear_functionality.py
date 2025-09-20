@@ -23,9 +23,10 @@ class TestClearFunctionalityIntegration:
         Then: All fields reset to default values, results area clears
         """
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
-        equity_tab = app.equity_tab
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # Enter data and calculate
         equity_controller.tk_vars['symbol'].set('AAPL')

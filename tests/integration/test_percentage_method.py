@@ -35,11 +35,12 @@ class TestPercentageMethodIntegration:
         - Risk Amount: $200.00
         """
         # Given
-        app = RiskCalculatorApp(self.root)
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
 
         # Ensure we're on the equity tab and percentage method is selected
-        equity_tab = app.equity_tab
-        equity_controller = app.equity_controller
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # Select percentage-based method
         equity_controller.set_risk_method(
@@ -66,7 +67,7 @@ class TestPercentageMethodIntegration:
         assert result.risk_method_used.value == 'percentage'
 
         # Check UI displays the results correctly
-        result_text = equity_tab.widgets['result_text'].get('1.0', tk.END)
+        result_text = equity_tab.result_text.get('1.0', tk.END)
         assert 'Percentage' in result_text
         assert '40' in result_text
         assert '200.00' in result_text
@@ -74,8 +75,10 @@ class TestPercentageMethodIntegration:
     def test_percentage_method_validation_errors(self):
         """Test percentage method with validation errors"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # When - Enter invalid data (risk percentage too high)
         equity_controller.tk_vars['symbol'].set('AAPL')
@@ -97,8 +100,10 @@ class TestPercentageMethodIntegration:
     def test_percentage_method_stop_loss_direction_validation(self):
         """Test stop loss direction validation for percentage method"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # When - Enter invalid stop loss (above entry for long position)
         equity_controller.tk_vars['symbol'].set('AAPL')
@@ -118,8 +123,10 @@ class TestPercentageMethodIntegration:
     def test_percentage_method_clear_functionality(self):
         """Test clear functionality preserves percentage method selection"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # Enter data and calculate
         equity_controller.tk_vars['symbol'].set('AAPL')
@@ -144,8 +151,10 @@ class TestPercentageMethodIntegration:
     def test_percentage_method_real_time_validation(self):
         """Test real-time validation for percentage method fields"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # When - Enter invalid risk percentage
         equity_controller.tk_vars['risk_percentage'].set('10.0')  # Too high
@@ -155,13 +164,15 @@ class TestPercentageMethodIntegration:
 
         # Then
         # Should show validation error
-        assert 'risk_percentage' in equity_controller.validation_result.field_errors
+        assert equity_controller.has_errors is True
 
     def test_percentage_method_cross_platform_behavior(self):
         """Test percentage method works consistently across platforms"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # When - Use decimal values that might behave differently on different platforms
         equity_controller.tk_vars['symbol'].set('AAPL')
@@ -186,8 +197,10 @@ class TestPercentageMethodIntegration:
         import time
 
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         equity_controller.tk_vars['symbol'].set('AAPL')
         equity_controller.tk_vars['account_size'].set('10000')

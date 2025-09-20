@@ -35,9 +35,10 @@ class TestFixedAmountMethodIntegration:
         - Risk Amount: $50.00
         """
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_tab = app.equity_tab
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # Select fixed amount method
         equity_controller.set_risk_method(RiskMethod.FIXED_AMOUNT)
@@ -62,7 +63,7 @@ class TestFixedAmountMethodIntegration:
         assert result.risk_method_used == RiskMethod.FIXED_AMOUNT
 
         # Check UI displays the results correctly
-        result_text = equity_tab.widgets['result_text'].get('1.0', tk.END)
+        result_text = equity_tab.result_text.get('1.0', tk.END)
         assert 'Fixed Amount' in result_text
         assert '10' in result_text
         assert '50.00' in result_text
@@ -70,18 +71,19 @@ class TestFixedAmountMethodIntegration:
     def test_fixed_amount_method_ui_field_visibility(self):
         """Test UI shows correct fields for fixed amount method"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_tab = app.equity_tab
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # When - Select fixed amount method
         equity_controller.set_risk_method(RiskMethod.FIXED_AMOUNT)
 
         # Then
         # Fixed amount field should be visible
-        assert equity_tab.widgets['fixed_risk_entry'].winfo_manager() == 'grid'
+        assert equity_tab.widgets['fixed_risk_amount_entry'].winfo_manager() == 'grid'
         # Stop loss field should be visible
-        assert equity_tab.widgets['stop_loss_entry'].winfo_manager() == 'grid'
+        assert equity_tab.widgets['stop_loss_price_entry'].winfo_manager() == 'grid'
         # Risk percentage field should be hidden
         assert equity_tab.widgets['risk_percentage_entry'].winfo_manager() == ''
         # Support/resistance field should be hidden
@@ -90,8 +92,10 @@ class TestFixedAmountMethodIntegration:
     def test_fixed_amount_exceeds_account_limit_validation(self):
         """Test validation when fixed amount exceeds 5% of account size"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
         equity_controller.set_risk_method(RiskMethod.FIXED_AMOUNT)
 
         # When - Enter fixed amount that exceeds 5% of account
@@ -118,8 +122,10 @@ class TestFixedAmountMethodIntegration:
     def test_fixed_amount_range_validation(self):
         """Test fixed amount must be between $10-$500"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
         equity_controller.set_risk_method(RiskMethod.FIXED_AMOUNT)
 
         # When - Enter amount below minimum
@@ -145,8 +151,10 @@ class TestFixedAmountMethodIntegration:
     def test_fixed_amount_method_switching_preserves_common_fields(self):
         """Test switching to fixed amount method preserves common field values"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # Start with percentage method and enter common data
         equity_controller.set_risk_method(RiskMethod.PERCENTAGE)
@@ -171,8 +179,10 @@ class TestFixedAmountMethodIntegration:
     def test_fixed_amount_with_different_price_ranges(self):
         """Test fixed amount method with various stock price ranges"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
         equity_controller.set_risk_method(RiskMethod.FIXED_AMOUNT)
 
         test_cases = [
@@ -201,9 +211,10 @@ class TestFixedAmountMethodIntegration:
     def test_fixed_amount_real_time_account_percentage_display(self):
         """Test UI shows what percentage of account the fixed amount represents"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
-        equity_tab = app.equity_tab
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
         equity_controller.set_risk_method(RiskMethod.FIXED_AMOUNT)
 
         # When
@@ -221,8 +232,10 @@ class TestFixedAmountMethodIntegration:
     def test_fixed_amount_decimal_precision(self):
         """Test fixed amount method maintains decimal precision"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
         equity_controller.set_risk_method(RiskMethod.FIXED_AMOUNT)
 
         # When - Use decimal values
@@ -246,8 +259,10 @@ class TestFixedAmountMethodIntegration:
     def test_fixed_amount_clear_preserves_method_selection(self):
         """Test clear functionality preserves fixed amount method selection"""
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
         equity_controller.set_risk_method(RiskMethod.FIXED_AMOUNT)
 
         # Enter data

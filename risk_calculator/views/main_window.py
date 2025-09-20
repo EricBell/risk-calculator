@@ -458,3 +458,15 @@ Built with Python and Tkinter"""
         self.root.deiconify()
         self.root.lift()
         self.root.focus_force()
+
+    def set_controller(self, controller) -> None:
+        """Set the controller and recreate tabs with proper controller references."""
+        self.controller = controller
+
+        # Clear existing tabs
+        for tab_name in list(self.tabs.keys()):
+            self.notebook.forget(self.tabs[tab_name])
+        self.tabs.clear()
+
+        # Recreate tabs with controller
+        self._create_tabs()

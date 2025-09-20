@@ -162,6 +162,10 @@ class EquityController(BaseController):
 
     def _show_validation_errors(self, validation_result: ValidationResult) -> None:
         """Show validation errors in the view."""
+        # Store validation result for test access
+        self.validation_result = validation_result
+        self.has_errors = True
+
         if hasattr(self.view, 'show_validation_errors'):
             self.view.show_validation_errors(validation_result.field_errors)
 

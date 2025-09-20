@@ -23,9 +23,10 @@ class TestMethodSwitchingIntegration:
         Then: UI shows fixed amount field and hides percentage field, calculation clears
         """
         # Given
-        app = RiskCalculatorApp(self.root)
-        equity_controller = app.equity_controller
-        equity_tab = app.equity_tab
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
+        equity_tab = main_window.tabs['equity']
+        equity_controller = equity_tab.controller
 
         # Start with percentage method and enter data
         equity_controller.set_risk_method(RiskMethod.PERCENTAGE)
@@ -46,7 +47,8 @@ class TestMethodSwitchingIntegration:
     def test_method_switching_preserves_common_fields(self):
         """Test common fields are preserved when switching methods"""
         # Given
-        app = RiskCalculatorApp(self.root)
+        app = RiskCalculatorApp()
+        main_window, main_controller = app.create_components()
         equity_controller = app.equity_controller
 
         # Enter common data in percentage method
