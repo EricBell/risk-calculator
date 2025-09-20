@@ -16,10 +16,10 @@ from ..services.realtime_validator import RealTimeValidationService
 class EquityController(BaseController):
     """Controller for equity trading with all three risk methods supported."""
 
-    def __init__(self, view):
-        # Initialize services
-        self.risk_calculator = RiskCalculationService()
-        self.trade_validator = TradeValidationService()
+    def __init__(self, view, risk_calculator=None, trade_validator=None):
+        # Initialize services (dependency injection or default creation)
+        self.risk_calculator = risk_calculator or RiskCalculationService()
+        self.trade_validator = trade_validator or TradeValidationService()
         self.realtime_validator = RealTimeValidationService(self.trade_validator)
 
         # Initialize trade object
@@ -80,6 +80,9 @@ class EquityController(BaseController):
 
             # Perform calculation
             calculation_result = self.risk_calculator.calculate_equity_position(self.trade)
+
+            # Store calculation result
+            self.calculation_result = calculation_result
 
             # Show results
             if calculation_result.success:

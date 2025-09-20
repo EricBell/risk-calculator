@@ -16,6 +16,7 @@ class BaseController(ABC):
         self.is_busy: bool = False
         self.has_errors: bool = False
         self.validation_result: Optional[ValidationResult] = None
+        self.calculation_result: Optional[Any] = None  # Store last calculation result
         self.current_risk_method: RiskMethod = RiskMethod.PERCENTAGE  # Default method
 
         # Initialize after subclass sets up tk_vars
@@ -127,8 +128,10 @@ class BaseController(ABC):
 
     def _clear_calculation_result(self) -> None:
         """Clear calculation results."""
-        # This will be implemented by subclasses
-        pass
+        self.calculation_result = None
+        # Clear results display in view if available
+        if hasattr(self.view, 'clear_results'):
+            self.view.clear_results()
 
     def _update_validation_status(self) -> None:
         """Update overall validation status based on current field errors."""
@@ -186,6 +189,24 @@ class BaseController(ABC):
     def _reset_trade_object(self) -> None:
         """Reset trade object to defaults (implemented by subclasses)."""
         pass
+
+    def clear_inputs(self) -> None:
+        """Clear all input fields except risk method selection."""
+        if hasattr(self, 'tk_vars'):
+            for field_name, var in self.tk_vars.items():
+                if field_name != 'risk_method':  # Preserve risk method selection
+                    var.set('')
+
+        # Clear calculation result and validation errors
+        self._clear_calculation_result()
+        self._clear_validation_errors()
+
+        # Reset trade object
+        self._reset_trade_object()
+
+        # Clear view inputs if available
+        if hasattr(self.view, 'clear_all_inputs'):
+            self.view.clear_all_inputs()
 
     def set_busy_state(self, is_busy: bool) -> None:
         """Set busy state and update UI."""

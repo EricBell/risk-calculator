@@ -14,6 +14,10 @@ class TestEquityControllerContract:
     """Contract tests for EquityController - these must fail initially"""
 
     def setup_method(self):
+        # Create Tkinter root (required for StringVar)
+        self.root = tk.Tk()
+        self.root.withdraw()  # Hide the window
+
         # Create a mock view (Tkinter frame)
         self.mock_view = Mock()
         self.mock_risk_service = Mock(spec=RiskCalculationService)
@@ -25,6 +29,11 @@ class TestEquityControllerContract:
             self.mock_risk_service,
             self.mock_validation_service
         )
+
+    def teardown_method(self):
+        # Clean up Tkinter root
+        if hasattr(self, 'root'):
+            self.root.destroy()
 
     def test_controller_initialization_contract(self):
         """Test controller initializes with required Tkinter variables"""

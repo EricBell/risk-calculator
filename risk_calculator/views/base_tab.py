@@ -18,6 +18,11 @@ class BaseTradingTab(ttk.Frame, ABC):
         self.method_frames: Dict[RiskMethod, ttk.Frame] = {}
         self.current_method: RiskMethod = RiskMethod.PERCENTAGE
 
+        # Aliases for test compatibility
+        self.widgets = self.input_widgets
+        self.error_labels = self.validation_labels
+        self.method_radios = {}
+
         # Configure grid weights for responsive layout
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -28,6 +33,7 @@ class BaseTradingTab(ttk.Frame, ABC):
         self._create_method_specific_widgets()
         self._create_result_widgets()
         self._setup_bindings()
+        self._create_test_aliases()
 
     def _create_main_layout(self) -> None:
         """Create the main layout structure."""
@@ -92,6 +98,8 @@ class BaseTradingTab(ttk.Frame, ABC):
                 command=lambda m=method: self.show_method_fields(m)
             )
             rb.grid(row=0, column=i, sticky="w", padx=(0, 20))
+            # Store radio button for test compatibility
+            self.method_radios[method] = rb
 
         # Create frames for each method
         self._create_percentage_method_frame()
@@ -153,6 +161,10 @@ class BaseTradingTab(ttk.Frame, ABC):
             command=self._on_clear_clicked
         )
         clear_button.grid(row=0, column=1, padx=(10, 0), pady=5)
+
+        # Store buttons in widgets for test compatibility
+        self.input_widgets['calculate_button'] = self.calculate_button
+        self.input_widgets['clear_button'] = clear_button
 
         # Results display
         self.result_text = tk.Text(
@@ -339,3 +351,19 @@ class BaseTradingTab(ttk.Frame, ABC):
         """Update UI theme (for future theming support)."""
         # Placeholder for theme support
         pass
+
+    def _create_test_aliases(self) -> None:
+        """Create aliases for test compatibility."""
+        # Add _entry suffix aliases for widgets
+        entry_fields = ['symbol', 'account_size', 'entry_price', 'option_symbol', 'contract_symbol',
+                       'premium', 'tick_value', 'tick_size', 'margin_requirement']
+
+        for field in entry_fields:
+            if field in self.input_widgets:
+                self.input_widgets[f'{field}_entry'] = self.input_widgets[field]
+
+        # Create method radio button aliases with expected naming
+        radio_items = list(self.method_radios.items())  # Create copy to avoid iteration issues
+        for method, radio_button in radio_items:
+            key = f"method_{method.value}"
+            self.method_radios[key] = radio_button

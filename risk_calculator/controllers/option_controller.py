@@ -16,10 +16,10 @@ from ..services.realtime_validator import RealTimeValidationService
 class OptionController(BaseController):
     """Controller for option trading with level-based method disabled."""
 
-    def __init__(self, view):
-        # Initialize services
-        self.risk_calculator = RiskCalculationService()
-        self.trade_validator = TradeValidationService()
+    def __init__(self, view, risk_calculator=None, trade_validator=None):
+        # Initialize services (dependency injection or default creation)
+        self.risk_calculator = risk_calculator or RiskCalculationService()
+        self.trade_validator = trade_validator or TradeValidationService()
         self.realtime_validator = RealTimeValidationService(self.trade_validator)
 
         # Initialize trade object
