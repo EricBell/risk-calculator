@@ -90,7 +90,6 @@ class BaseController(ABC):
         # Update field error display
         if error_message:
             self._show_field_error(var_name, error_message)
-            self.has_errors = True
         else:
             self._clear_field_error(var_name)
 
@@ -102,7 +101,10 @@ class BaseController(ABC):
 
     def _validate_single_field(self, field_name: str, value: str) -> Optional[str]:
         """Validate a single field and return error message if invalid."""
-        # This will be implemented by subclasses or use the real-time validator
+        if hasattr(self, 'realtime_validator'):
+            return self.realtime_validator.validate_field(
+                field_name, value, self._get_trade_type(), self.trade
+            )
         return None
 
     def _show_field_error(self, field_name: str, error_message: str) -> None:
@@ -130,9 +132,13 @@ class BaseController(ABC):
 
     def _update_validation_status(self) -> None:
         """Update overall validation status based on current field errors."""
-        # Check if any fields have errors
-        # This implementation depends on how errors are tracked
-        pass
+        # Check all fields for errors by validating them
+        self.has_errors = False
+        for field_name, var in self.tk_vars.items():
+            error_message = self._validate_single_field(field_name, var.get())
+            if error_message:
+                self.has_errors = True
+                break
 
     def _update_calculate_button_state(self) -> None:
         """Enable/disable calculate button based on validation status."""
@@ -166,6 +172,11 @@ class BaseController(ABC):
 
         if hasattr(self.view, 'show_validation_errors'):
             self.view.show_validation_errors({'risk_method': error_msg})
+
+    def _get_trade_type(self) -> str:
+        """Get the trade type string for validation purposes."""
+        # Extract from class name: EquityController -> equity
+        return self.__class__.__name__.replace('Controller', '').lower()
 
     def _on_method_changed(self, old_method: RiskMethod, new_method: RiskMethod) -> None:
         """Handle method change notifications."""
