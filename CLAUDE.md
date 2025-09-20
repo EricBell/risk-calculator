@@ -60,7 +60,18 @@ risk_calculator/
 ## Next Steps
 Ready for `/tasks` command to generate implementation tasks from design artifacts.
 
+## Current Feature: Calculate Position Button Fix
+**Branch**: `002-the-calculate-position`
+**Issue**: Calculate Position button remains disabled despite complete form input across all tabs
+**Specification**: `/specs/002-the-calculate-position/` (spec.md, plan.md, research.md, quickstart.md)
+
+**Key Implementation Details**:
+- Button enablement logic in `BaseController._update_calculate_button_state()`
+- Real-time validation via StringVar trace callbacks
+- Method-specific required fields in each controller's `get_required_fields()`
+- Validation service integration for error checking
+
 ## Recent Changes
+- 2025-09-20: Added Calculate Position button fix specification and implementation plan
 - 2025-09-18: Updated specifications from Windows-only C#/.NET to cross-platform Python
 - 2025-09-17: Initial feature specification and planning complete
-- 2025-09-17: Architecture research and technology stack decisions
