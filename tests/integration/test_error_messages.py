@@ -28,7 +28,7 @@ class TestErrorMessageIntegration(unittest.TestCase):
         """Test Scenario 2A: Clear error messages appear near problematic fields."""
         try:
             from risk_calculator.controllers.enhanced_base_controller import EnhancedBaseController
-            from risk_calculator.views.options_tab import OptionsTab
+            from risk_calculator.views.option_tab import OptionsTab
 
             tab = OptionsTab(self.root)
             controller = EnhancedBaseController(tab)

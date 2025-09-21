@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from risk_calculator.views.main_window import MainWindow
-from risk_calculator.controllers.main_controller import MainController
+from risk_calculator.controllers.enhanced_main_controller import EnhancedMainController
 
 
 class RiskCalculatorApp:
@@ -24,7 +24,7 @@ class RiskCalculatorApp:
     def create_components(self):
         """Create application components without running GUI."""
         self.main_window = MainWindow()
-        self.main_controller = MainController(self.main_window)
+        self.main_controller = EnhancedMainController(self.main_window)
         self.main_window.set_controller(self.main_controller)
         return self.main_window, self.main_controller
 
@@ -170,7 +170,7 @@ def create_application() -> tuple:
         logger.info("Main window created successfully")
 
         # Create main controller with window reference
-        main_controller = MainController(main_window)
+        main_controller = EnhancedMainController(main_window)
         logger.info("Main controller created successfully")
 
         # Connect controller to window and recreate tabs with controllers

@@ -25,9 +25,10 @@ except ImportError:
 from risk_calculator.services.configuration_service import JsonConfigurationService
 from risk_calculator.models.window_configuration import WindowConfiguration
 from risk_calculator.views.error_display import ResponsiveErrorDisplay
+from .main_controller import MainController
 
 
-class EnhancedMainController(WindowController):
+class EnhancedMainController(MainController, WindowController):
     """Enhanced main window controller with configuration management and responsive layout."""
 
     def __init__(self, main_window):
@@ -37,6 +38,9 @@ class EnhancedMainController(WindowController):
         Args:
             main_window: Main window view component
         """
+        # Initialize the base MainController
+        super().__init__(main_window)
+
         self.main_window = main_window
         self.config_service = JsonConfigurationService()
         self.is_configuring_layout = False
@@ -88,8 +92,8 @@ class EnhancedMainController(WindowController):
 
     def _setup_event_handlers(self):
         """Setup window event handlers."""
-        # Bind window resize events
-        self.main_window.bind('<Configure>', self._on_window_configure)
+        # NOTE: Configure events are handled by MainWindow to avoid conflicts
+        # MainWindow will call notify_window_resize when needed
 
         # Bind window close event
         self.main_window.protocol("WM_DELETE_WINDOW", self._on_window_close)
@@ -281,8 +285,20 @@ class EnhancedMainController(WindowController):
         except Exception:
             pass
 
+    def notify_window_resize(self, width: int, height: int) -> None:
+        """Notify controller of window resize (called by MainWindow)."""
+        # Create a mock event for compatibility with existing handler
+        class MockEvent:
+            def __init__(self, w, h, widget):
+                self.width = w
+                self.height = h
+                self.widget = widget
+
+        mock_event = MockEvent(width, height, self.main_window)
+        self.handle_window_resize(mock_event)
+
     def _on_window_configure(self, event):
-        """Handle window configure events."""
+        """Handle window configure events (deprecated - use notify_window_resize)."""
         if event.widget == self.main_window:
             self.handle_window_resize(event)
 

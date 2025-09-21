@@ -40,13 +40,10 @@ class FontManager:
 
     def calculate_scale_factor(self, window_height: int) -> float:
         """Calculate font scale factor based on window height."""
-        if window_height < self.min_height:
-            window_height = self.min_height
-
-        # Calculate scale based on height ratio
+        # Calculate scale based on height ratio first
         scale = window_height / self.base_height
 
-        # Apply bounds
+        # Apply bounds (this handles both min_height and extreme cases)
         scale = max(self.min_scale, min(self.max_scale, scale))
 
         return scale
@@ -61,8 +58,8 @@ class FontManager:
         """Update all fonts based on window height."""
         new_scale = self.calculate_scale_factor(window_height)
 
-        # Only update if scale changed significantly
-        if abs(new_scale - self.current_scale) < 0.05:
+        # Only update if scale changed significantly (more responsive threshold)
+        if abs(new_scale - self.current_scale) < 0.02:
             return
 
         self.current_scale = new_scale
@@ -118,6 +115,10 @@ class FontManager:
     def register_widget(self, widget, font_type: str) -> None:
         """Register a widget for font scaling."""
         self.font_widgets.append((widget, font_type))
+
+    def register_widget_for_font_scaling(self, widget, font_type: str) -> None:
+        """Register a widget for font scaling (alias for register_widget)."""
+        self.register_widget(widget, font_type)
 
     def cleanup_widgets(self) -> None:
         """Remove destroyed widgets from tracking list."""
@@ -406,6 +407,10 @@ class MainWindow:
 
             # Update font scaling based on window height
             self.font_manager.update_fonts_for_height(height)
+
+            # Notify controller of resize if it has the notification method
+            if self.controller and hasattr(self.controller, 'notify_window_resize'):
+                self.controller.notify_window_resize(width, height)
 
             # Update layout for current window size
             # This ensures all content scales properly

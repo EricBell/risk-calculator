@@ -236,8 +236,58 @@ class BaseTradingTab(ttk.Frame, ABC):
             for field_name, label in self.validation_labels.items():
                 main_window.register_widget_for_font_scaling(label, 'error')
 
+            # Register all labels and entries in the tab for comprehensive scaling
+            self._register_tab_widgets_safely(main_window)
+
         except Exception:
             pass  # Ignore registration errors
+
+    def _register_tab_widgets_safely(self, main_window) -> None:
+        """Safely register specific widgets in known containers for font scaling."""
+        try:
+            # Register widgets in known containers without deep recursion
+            containers_to_check = []
+
+            # Add known container attributes
+            if hasattr(self, 'input_frame'):
+                containers_to_check.append(self.input_frame)
+            if hasattr(self, 'method_frame'):
+                containers_to_check.append(self.method_frame)
+            if hasattr(self, 'method_inputs_frame'):
+                containers_to_check.append(self.method_inputs_frame)
+            if hasattr(self, 'button_frame'):
+                containers_to_check.append(self.button_frame)
+
+            # Register widgets in these containers only (no deep recursion)
+            for container in containers_to_check:
+                if container and hasattr(container, 'winfo_children'):
+                    for child in container.winfo_children():
+                        widget_class = child.__class__.__name__
+
+                        if widget_class in ['Label', 'TLabel']:
+                            main_window.register_widget_for_font_scaling(child, 'label')
+                        elif widget_class in ['Entry', 'TEntry']:
+                            main_window.register_widget_for_font_scaling(child, 'entry')
+                        elif widget_class in ['Button', 'TButton']:
+                            main_window.register_widget_for_font_scaling(child, 'button')
+                        elif widget_class in ['Radiobutton', 'TRadiobutton']:
+                            main_window.register_widget_for_font_scaling(child, 'button')
+                        elif widget_class in ['LabelFrame', 'TLabelFrame']:
+                            main_window.register_widget_for_font_scaling(child, 'label')
+
+                        # Check one level deeper for method frames (which have sub-frames)
+                        elif widget_class in ['Frame', 'TFrame'] and hasattr(child, 'winfo_children'):
+                            for grandchild in child.winfo_children():
+                                gc_class = grandchild.__class__.__name__
+                                if gc_class in ['Label', 'TLabel']:
+                                    main_window.register_widget_for_font_scaling(grandchild, 'label')
+                                elif gc_class in ['Entry', 'TEntry']:
+                                    main_window.register_widget_for_font_scaling(grandchild, 'entry')
+                                elif gc_class in ['Button', 'TButton']:
+                                    main_window.register_widget_for_font_scaling(grandchild, 'button')
+
+        except Exception:
+            pass  # Ignore errors in widget registration
 
     def _find_main_window(self):
         """Find the main window by walking up the widget hierarchy."""
@@ -326,6 +376,29 @@ class BaseTradingTab(ttk.Frame, ABC):
             self.calculate_button.configure(text="Calculating...", state="disabled")
         else:
             self.calculate_button.configure(text="Calculate Position")
+
+    def get_all_field_values(self) -> Dict[str, str]:
+        """Get all field values from the form for validation."""
+        field_values = {}
+
+        for field_name, widget in self.input_widgets.items():
+            try:
+                if isinstance(widget, (ttk.Entry, tk.Entry)):
+                    field_values[field_name] = widget.get()
+                elif isinstance(widget, (tk.StringVar, tk.IntVar, tk.DoubleVar)):
+                    field_values[field_name] = str(widget.get())
+                elif hasattr(widget, 'get'):
+                    field_values[field_name] = str(widget.get())
+                else:
+                    field_values[field_name] = ""
+            except Exception:
+                field_values[field_name] = ""
+
+        return field_values
+
+    def get_form_fields(self) -> Dict[str, tk.Widget]:
+        """Get form field widgets for error label registration."""
+        return self.input_widgets.copy()
 
     def show_calculation_result(self, result_data: Dict[str, Any]) -> None:
         """Display calculation results."""

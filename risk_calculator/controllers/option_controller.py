@@ -3,7 +3,7 @@
 import tkinter as tk
 from decimal import Decimal
 from typing import Optional, Dict, List
-from .base_controller import BaseController
+from .enhanced_base_controller import EnhancedBaseController
 from ..models.option_trade import OptionTrade
 from ..models.risk_method import RiskMethod
 from ..models.validation_result import ValidationResult
@@ -13,7 +13,7 @@ from ..services.validators import TradeValidationService
 from ..services.realtime_validator import RealTimeValidationService
 
 
-class OptionController(BaseController):
+class OptionController(EnhancedBaseController):
     """Controller for option trading with level-based method disabled."""
 
     def __init__(self, view, risk_calculator=None, trade_validator=None):
