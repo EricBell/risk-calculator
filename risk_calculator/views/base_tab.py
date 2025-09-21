@@ -27,6 +27,9 @@ class BaseTradingTab(ttk.Frame, ABC):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
+        # Configure for proper window resizing
+        self.grid_propagate(True)
+
         # Initialize UI components
         self._create_main_layout()
         self._create_common_widgets()
@@ -41,6 +44,9 @@ class BaseTradingTab(ttk.Frame, ABC):
         self.main_frame = ttk.Frame(self, padding="10")
         self.main_frame.grid(row=0, column=0, sticky="nsew")
         self.main_frame.grid_columnconfigure(0, weight=1)
+
+        # Ensure the main frame resizes with the tab
+        self.main_frame.grid_propagate(True)
 
         # Input section
         self.input_frame = ttk.LabelFrame(self.main_frame, text="Trade Parameters", padding="10")

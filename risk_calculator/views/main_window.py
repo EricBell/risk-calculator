@@ -46,6 +46,12 @@ class MainWindow:
         self.root.geometry("800x700")
         self.root.minsize(600, 500)
 
+        # Explicitly ensure window is resizable
+        self.root.resizable(True, True)
+
+        # Force window manager to respect our settings
+        self.root.wm_resizable(True, True)
+
         # Configure grid weights for responsive design
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=1)
@@ -144,6 +150,9 @@ class MainWindow:
         # Create notebook for tabs
         self.notebook = ttk.Notebook(self.main_frame)
         self.notebook.grid(row=1, column=0, sticky="nsew")
+
+        # Ensure notebook expands with window
+        self.notebook.grid_propagate(True)
 
         # Bind tab selection event
         self.notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
@@ -565,3 +574,32 @@ Built with Python and Tkinter"""
     def update_idletasks(self):
         """Update idle tasks (Tkinter compatibility)."""
         return self.root.update_idletasks()
+
+    def test_resize_capability(self):
+        """Test and report window resize capability."""
+        print("=== Window Resize Test ===")
+        print(f"Current geometry: {self.geometry()}")
+        print(f"Resizable settings: {self.root.resizable()}")
+        print(f"Min size: {self.root.minsize()}")
+        print(f"Max size: {self.root.maxsize()}")
+        print(f"Window state: {self.root.state()}")
+
+        # Test programmatic resize
+        original_geom = self.geometry()
+        print(f"Testing programmatic resize from {original_geom}")
+
+        self.geometry("1000x800")
+        self.update()
+
+        new_geom = self.geometry()
+        print(f"After resize: {new_geom}")
+        print(f"Programmatic resize working: {original_geom != new_geom}")
+
+        # Add resize event binding for testing manual resize
+        def on_resize(event):
+            if event.widget == self.root:
+                print(f"Manual resize detected: {self.geometry()}")
+
+        self.root.bind("<Configure>", on_resize, add="+")
+        print("Manual resize detection enabled - try resizing with mouse")
+        print("========================")
