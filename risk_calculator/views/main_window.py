@@ -3,12 +3,125 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from typing import Dict, Optional, Any, Callable
+from typing import Dict, Optional, Any, Callable, List, Tuple
 import sys
 import os
 from .equity_tab import EquityTab
 from .option_tab import OptionsTab
 from .future_tab import FuturesTab
+
+
+class FontManager:
+    """Manages responsive font scaling for the application."""
+
+    def __init__(self, ttk_style: ttk.Style):
+        self.style = ttk_style
+        self.base_height = 600  # Reference height for 1.0x scaling
+        self.min_height = 500   # Minimum window height
+        self.max_scale = 2.5    # Maximum scale factor
+        self.min_scale = 0.8    # Minimum scale factor
+
+        # Base font sizes for different widget types
+        self.base_fonts = {
+            'label': 9,
+            'entry': 9,
+            'button': 9,
+            'error': 8,
+            'info': 8,
+            'result': 10,
+            'title': 12
+        }
+
+        # Store current scale factor
+        self.current_scale = 1.0
+
+        # Track widgets that need font updates
+        self.font_widgets = []
+
+    def calculate_scale_factor(self, window_height: int) -> float:
+        """Calculate font scale factor based on window height."""
+        if window_height < self.min_height:
+            window_height = self.min_height
+
+        # Calculate scale based on height ratio
+        scale = window_height / self.base_height
+
+        # Apply bounds
+        scale = max(self.min_scale, min(self.max_scale, scale))
+
+        return scale
+
+    def get_scaled_font_size(self, base_size: int, scale_factor: float) -> int:
+        """Get scaled font size with reasonable bounds."""
+        scaled_size = int(base_size * scale_factor)
+        # Ensure minimum readability and maximum practicality
+        return max(8, min(24, scaled_size))
+
+    def update_fonts_for_height(self, window_height: int) -> None:
+        """Update all fonts based on window height."""
+        new_scale = self.calculate_scale_factor(window_height)
+
+        # Only update if scale changed significantly
+        if abs(new_scale - self.current_scale) < 0.05:
+            return
+
+        self.current_scale = new_scale
+
+        # Update TTK styles
+        self._update_ttk_styles(new_scale)
+
+        # Update individual widgets
+        self._update_widget_fonts(new_scale)
+
+    def _update_ttk_styles(self, scale_factor: float) -> None:
+        """Update TTK styles with scaled fonts."""
+        try:
+            # Update standard TTK widget styles
+            label_size = self.get_scaled_font_size(self.base_fonts['label'], scale_factor)
+            entry_size = self.get_scaled_font_size(self.base_fonts['entry'], scale_factor)
+            button_size = self.get_scaled_font_size(self.base_fonts['button'], scale_factor)
+            title_size = self.get_scaled_font_size(self.base_fonts['title'], scale_factor)
+            error_size = self.get_scaled_font_size(self.base_fonts['error'], scale_factor)
+
+            # Configure TTK styles
+            self.style.configure('TLabel', font=('TkDefaultFont', label_size))
+            self.style.configure('TEntry', font=('TkDefaultFont', entry_size))
+            self.style.configure('TButton', font=('TkDefaultFont', button_size))
+            self.style.configure('Title.TLabel', font=('TkDefaultFont', title_size, 'bold'))
+            self.style.configure('Error.TLabel', font=('TkDefaultFont', error_size))
+            self.style.configure('Warning.TLabel', font=('TkDefaultFont', error_size))
+            self.style.configure('Success.TLabel', font=('TkDefaultFont', error_size))
+
+        except Exception:
+            pass  # Ignore style update errors
+
+    def _update_widget_fonts(self, scale_factor: float) -> None:
+        """Update fonts for individually tracked widgets."""
+        for widget_info in self.font_widgets:
+            try:
+                widget, font_type = widget_info
+                if not widget.winfo_exists():
+                    continue
+
+                base_size = self.base_fonts.get(font_type, 9)
+                new_size = self.get_scaled_font_size(base_size, scale_factor)
+
+                # Update font based on widget type
+                if font_type == 'result':
+                    widget.configure(font=('Consolas', new_size))
+                else:
+                    widget.configure(font=('TkDefaultFont', new_size))
+
+            except Exception:
+                pass  # Ignore individual widget update errors
+
+    def register_widget(self, widget, font_type: str) -> None:
+        """Register a widget for font scaling."""
+        self.font_widgets.append((widget, font_type))
+
+    def cleanup_widgets(self) -> None:
+        """Remove destroyed widgets from tracking list."""
+        self.font_widgets = [(w, t) for w, t in self.font_widgets if w.winfo_exists()]
 
 
 class MainWindow:
@@ -74,6 +187,9 @@ class MainWindow:
         # Configure style for better cross-platform appearance
         self.style = ttk.Style()
         self._configure_styles()
+
+        # Initialize font manager for responsive scaling
+        self.font_manager = FontManager(self.style)
 
     def _configure_styles(self) -> None:
         """Configure TTK styles for consistent appearance."""
@@ -176,6 +292,8 @@ class MainWindow:
         else:
             self.tabs['equity'] = EquityTab(self.notebook)
 
+        # Set main window reference for font scaling
+        self.tabs['equity'].main_window = self
         self.notebook.add(self.tabs['equity'], text="Equity Trading")
 
         # Create Options tab
@@ -186,6 +304,8 @@ class MainWindow:
         else:
             self.tabs['option'] = OptionsTab(self.notebook)
 
+        # Set main window reference for font scaling
+        self.tabs['option'].main_window = self
         self.notebook.add(self.tabs['option'], text="Options Trading")
 
         # Create Futures tab
@@ -196,6 +316,8 @@ class MainWindow:
         else:
             self.tabs['future'] = FuturesTab(self.notebook)
 
+        # Set main window reference for font scaling
+        self.tabs['future'].main_window = self
         self.notebook.add(self.tabs['future'], text="Futures Trading")
 
         # Set initial tab
@@ -281,6 +403,9 @@ class MainWindow:
             # Get current window size
             width = self.root.winfo_width()
             height = self.root.winfo_height()
+
+            # Update font scaling based on window height
+            self.font_manager.update_fonts_for_height(height)
 
             # Update layout for current window size
             # This ensures all content scales properly
@@ -494,6 +619,15 @@ Built with Python and Tkinter"""
         """Get current window geometry for session persistence."""
         return self.root.geometry()
 
+    def register_widget_for_font_scaling(self, widget, font_type: str) -> None:
+        """Register a widget for responsive font scaling."""
+        if hasattr(self, 'font_manager'):
+            self.font_manager.register_widget(widget, font_type)
+
+    def get_font_manager(self):
+        """Get the font manager instance."""
+        return getattr(self, 'font_manager', None)
+
     def set_window_geometry(self, geometry: str) -> None:
         """Set window geometry from saved session."""
         try:
@@ -622,9 +756,13 @@ Built with Python and Tkinter"""
             # Update all child widgets
             self.root.update()
 
-            # Trigger responsive layout update
+            # Trigger responsive layout and font scaling update
             if hasattr(self, 'notebook') and self.notebook:
                 self._update_responsive_layout()
+
+            # Clean up destroyed widgets from font tracking
+            if hasattr(self, 'font_manager'):
+                self.font_manager.cleanup_widgets()
 
         except Exception:
             pass
@@ -672,4 +810,21 @@ Built with Python and Tkinter"""
         self.root.bind("<Configure>", on_manual_resize, add="+")
         print("\nManual resize detection enabled - try resizing with mouse")
         print("Content should scale responsively when window is resized")
+
+        # Test font scaling
+        print("\n=== Font Scaling Test ===")
+        if hasattr(self, 'font_manager'):
+            scale = self.font_manager.current_scale
+            registered_widgets = len(self.font_manager.font_widgets)
+            print(f"Current font scale: {scale:.2f}x")
+            print(f"Registered widgets: {registered_widgets}")
+
+            # Show scale at different heights
+            heights = [600, 800, 1000, 1200]
+            for h in heights:
+                s = self.font_manager.calculate_scale_factor(h)
+                size = self.font_manager.get_scaled_font_size(9, s)
+                print(f"  {h}px height → {s:.2f}x scale → {size}px font")
+
+        print("Fonts should scale proportionally with window height!")
         print("========================")

@@ -38,6 +38,9 @@ class BaseTradingTab(ttk.Frame, ABC):
         self._setup_bindings()
         self._create_test_aliases()
 
+        # Register widgets for font scaling
+        self._register_widgets_for_font_scaling()
+
     def _create_main_layout(self) -> None:
         """Create the main layout structure."""
         # Main container with padding
@@ -216,6 +219,44 @@ class BaseTradingTab(ttk.Frame, ABC):
 
         # Enter key binding for calculate
         self.bind_all("<Return>", lambda e: self._on_calculate_clicked() if self.calculate_button['state'] != 'disabled' else None)
+
+    def _register_widgets_for_font_scaling(self) -> None:
+        """Register widgets with the main window's font manager for responsive scaling."""
+        try:
+            # Find the main window by walking up the widget hierarchy
+            main_window = self._find_main_window()
+            if not main_window or not hasattr(main_window, 'register_widget_for_font_scaling'):
+                return
+
+            # Register the result text widget for special font handling
+            if hasattr(self, 'result_text'):
+                main_window.register_widget_for_font_scaling(self.result_text, 'result')
+
+            # Register validation label widgets
+            for field_name, label in self.validation_labels.items():
+                main_window.register_widget_for_font_scaling(label, 'error')
+
+        except Exception:
+            pass  # Ignore registration errors
+
+    def _find_main_window(self):
+        """Find the main window by walking up the widget hierarchy."""
+        try:
+            # First check if we have a direct reference
+            if hasattr(self, 'main_window') and self.main_window:
+                return self.main_window
+
+            # Fallback: walk up the widget hierarchy
+            widget = self.master  # Start with our parent (should be notebook)
+            while widget:
+                # Check if current widget has the font manager
+                if hasattr(widget, 'register_widget_for_font_scaling'):
+                    return widget
+                # Move up the hierarchy
+                widget = getattr(widget, 'master', None)
+            return None
+        except Exception:
+            return None
 
     # Abstract methods that subclasses must implement
     @abstractmethod
