@@ -79,8 +79,8 @@ class BaseTradingTab(ttk.Frame, ABC):
 
         # Account size
         ttk.Label(self.input_frame, text="Account Size ($):").grid(row=row, column=0, sticky="w", padx=(0, 10))
-        account_entry = ttk.Entry(self.input_frame, width=15)
-        account_entry.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        account_entry = ttk.Entry(self.input_frame)
+        account_entry.grid(row=row, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['account_size'] = account_entry
         self._add_validation_label('account_size', row)
         row += 1
@@ -119,33 +119,36 @@ class BaseTradingTab(ttk.Frame, ABC):
     def _create_percentage_method_frame(self) -> None:
         """Create percentage method input frame."""
         frame = ttk.Frame(self.method_inputs_frame)
+        frame.grid_columnconfigure(1, weight=1)  # Allow entry to expand
         self.method_frames[RiskMethod.PERCENTAGE] = frame
 
         ttk.Label(frame, text="Risk Percentage (1-5%):").grid(row=0, column=0, sticky="w", padx=(0, 10))
-        risk_entry = ttk.Entry(frame, width=10)
-        risk_entry.grid(row=0, column=1, sticky="w", padx=(0, 10))
+        risk_entry = ttk.Entry(frame)
+        risk_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['risk_percentage'] = risk_entry
         self._add_method_validation_label('risk_percentage', frame, 0)
 
     def _create_fixed_amount_method_frame(self) -> None:
         """Create fixed amount method input frame."""
         frame = ttk.Frame(self.method_inputs_frame)
+        frame.grid_columnconfigure(1, weight=1)  # Allow entry to expand
         self.method_frames[RiskMethod.FIXED_AMOUNT] = frame
 
         ttk.Label(frame, text="Fixed Risk Amount ($10-500):").grid(row=0, column=0, sticky="w", padx=(0, 10))
-        amount_entry = ttk.Entry(frame, width=10)
-        amount_entry.grid(row=0, column=1, sticky="w", padx=(0, 10))
+        amount_entry = ttk.Entry(frame)
+        amount_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['fixed_risk_amount'] = amount_entry
         self._add_method_validation_label('fixed_risk_amount', frame, 0)
 
     def _create_level_based_method_frame(self) -> None:
         """Create level-based method input frame."""
         frame = ttk.Frame(self.method_inputs_frame)
+        frame.grid_columnconfigure(1, weight=1)  # Allow entry to expand
         self.method_frames[RiskMethod.LEVEL_BASED] = frame
 
         ttk.Label(frame, text="Support/Resistance Level ($):").grid(row=0, column=0, sticky="w", padx=(0, 10))
-        level_entry = ttk.Entry(frame, width=15)
-        level_entry.grid(row=0, column=1, sticky="w", padx=(0, 10))
+        level_entry = ttk.Entry(frame)
+        level_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['support_resistance_level'] = level_entry
         self._add_method_validation_label('support_resistance_level', frame, 0)
 
@@ -176,7 +179,6 @@ class BaseTradingTab(ttk.Frame, ABC):
         self.result_text = tk.Text(
             self.result_frame,
             height=8,
-            width=50,
             state="disabled",
             wrap="word",
             font=("Consolas", 10)

@@ -17,16 +17,16 @@ class FuturesTab(BaseTradingTab):
 
         # Contract symbol
         ttk.Label(self.input_frame, text="Contract Symbol:").grid(row=row, column=0, sticky="w", padx=(0, 10))
-        symbol_entry = ttk.Entry(self.input_frame, width=15)
-        symbol_entry.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        symbol_entry = ttk.Entry(self.input_frame)
+        symbol_entry.grid(row=row, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['contract_symbol'] = symbol_entry
         self._add_validation_label('contract_symbol', row)
         row += 1
 
         # Entry price
         ttk.Label(self.input_frame, text="Entry Price:").grid(row=row, column=0, sticky="w", padx=(0, 10))
-        entry_price = ttk.Entry(self.input_frame, width=15)
-        entry_price.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        entry_price = ttk.Entry(self.input_frame)
+        entry_price.grid(row=row, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['entry_price'] = entry_price
         self._add_validation_label('entry_price', row)
         row += 1
@@ -34,10 +34,11 @@ class FuturesTab(BaseTradingTab):
         # Tick value
         ttk.Label(self.input_frame, text="Tick Value ($):").grid(row=row, column=0, sticky="w", padx=(0, 10))
         tick_value_frame = ttk.Frame(self.input_frame)
-        tick_value_frame.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        tick_value_frame.grid(row=row, column=1, sticky="ew", padx=(0, 10))
+        tick_value_frame.grid_columnconfigure(0, weight=1)
 
-        tick_value_entry = ttk.Entry(tick_value_frame, width=10)
-        tick_value_entry.grid(row=0, column=0, sticky="w")
+        tick_value_entry = ttk.Entry(tick_value_frame)
+        tick_value_entry.grid(row=0, column=0, sticky="ew")
         self.input_widgets['tick_value'] = tick_value_entry
 
         ttk.Label(tick_value_frame, text="per tick", font=("TkDefaultFont", 8)).grid(
@@ -49,10 +50,11 @@ class FuturesTab(BaseTradingTab):
         # Tick size
         ttk.Label(self.input_frame, text="Tick Size:").grid(row=row, column=0, sticky="w", padx=(0, 10))
         tick_size_frame = ttk.Frame(self.input_frame)
-        tick_size_frame.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        tick_size_frame.grid(row=row, column=1, sticky="ew", padx=(0, 10))
+        tick_size_frame.grid_columnconfigure(0, weight=1)
 
-        tick_size_entry = ttk.Entry(tick_size_frame, width=10)
-        tick_size_entry.grid(row=0, column=0, sticky="w")
+        tick_size_entry = ttk.Entry(tick_size_frame)
+        tick_size_entry.grid(row=0, column=0, sticky="ew")
         self.input_widgets['tick_size'] = tick_size_entry
 
         ttk.Label(tick_size_frame, text="minimum price increment", font=("TkDefaultFont", 8)).grid(
@@ -64,10 +66,11 @@ class FuturesTab(BaseTradingTab):
         # Margin requirement
         ttk.Label(self.input_frame, text="Initial Margin ($):").grid(row=row, column=0, sticky="w", padx=(0, 10))
         margin_frame = ttk.Frame(self.input_frame)
-        margin_frame.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        margin_frame.grid(row=row, column=1, sticky="ew", padx=(0, 10))
+        margin_frame.grid_columnconfigure(0, weight=1)
 
-        margin_entry = ttk.Entry(margin_frame, width=15)
-        margin_entry.grid(row=0, column=0, sticky="w")
+        margin_entry = ttk.Entry(margin_frame)
+        margin_entry.grid(row=0, column=0, sticky="ew")
         self.input_widgets['margin_requirement'] = margin_entry
 
         ttk.Label(margin_frame, text="per contract", font=("TkDefaultFont", 8)).grid(
@@ -79,7 +82,7 @@ class FuturesTab(BaseTradingTab):
         # Trade direction
         ttk.Label(self.input_frame, text="Direction:").grid(row=row, column=0, sticky="w", padx=(0, 10))
         direction_frame = ttk.Frame(self.input_frame)
-        direction_frame.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        direction_frame.grid(row=row, column=1, sticky="ew", padx=(0, 10))
 
         direction_var = tk.StringVar(value="LONG")
         self.input_widgets['trade_direction'] = direction_var
@@ -147,8 +150,8 @@ class FuturesTab(BaseTradingTab):
 
         # Add stop loss field
         ttk.Label(frame, text="Stop Loss Price:").grid(row=1, column=0, sticky="w", padx=(0, 10), pady=(10, 0))
-        stop_loss_entry = ttk.Entry(frame, width=15)
-        stop_loss_entry.grid(row=1, column=1, sticky="w", padx=(0, 10), pady=(10, 0))
+        stop_loss_entry = ttk.Entry(frame)
+        stop_loss_entry.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(10, 0))
         self.input_widgets['stop_loss_price'] = stop_loss_entry
         self._add_method_validation_label('stop_loss_price', frame, 1)
 
@@ -159,8 +162,8 @@ class FuturesTab(BaseTradingTab):
 
         # Add stop loss field
         ttk.Label(frame, text="Stop Loss Price:").grid(row=1, column=0, sticky="w", padx=(0, 10), pady=(10, 0))
-        stop_loss_entry = ttk.Entry(frame, width=15)
-        stop_loss_entry.grid(row=1, column=1, sticky="w", padx=(0, 10), pady=(10, 0))
+        stop_loss_entry = ttk.Entry(frame)
+        stop_loss_entry.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(10, 0))
 
         # Handle multiple stop loss entries like in equity tab
         if 'stop_loss_price' not in self.input_widgets:

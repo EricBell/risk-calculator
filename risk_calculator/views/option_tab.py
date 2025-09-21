@@ -16,16 +16,16 @@ class OptionsTab(BaseTradingTab):
 
         # Option symbol
         ttk.Label(self.input_frame, text="Option Symbol:").grid(row=row, column=0, sticky="w", padx=(0, 10))
-        symbol_entry = ttk.Entry(self.input_frame, width=20)
-        symbol_entry.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        symbol_entry = ttk.Entry(self.input_frame)
+        symbol_entry.grid(row=row, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['option_symbol'] = symbol_entry
         self._add_validation_label('option_symbol', row)
         row += 1
 
         # Premium per share
         ttk.Label(self.input_frame, text="Premium per Share ($):").grid(row=row, column=0, sticky="w", padx=(0, 10))
-        premium_entry = ttk.Entry(self.input_frame, width=15)
-        premium_entry.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        premium_entry = ttk.Entry(self.input_frame)
+        premium_entry.grid(row=row, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['premium'] = premium_entry
         self._add_validation_label('premium', row)
         row += 1
@@ -33,10 +33,11 @@ class OptionsTab(BaseTradingTab):
         # Contract multiplier
         ttk.Label(self.input_frame, text="Contract Multiplier:").grid(row=row, column=0, sticky="w", padx=(0, 10))
         multiplier_frame = ttk.Frame(self.input_frame)
-        multiplier_frame.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        multiplier_frame.grid(row=row, column=1, sticky="ew", padx=(0, 10))
+        multiplier_frame.grid_columnconfigure(0, weight=1)
 
-        multiplier_entry = ttk.Entry(multiplier_frame, width=10)
-        multiplier_entry.grid(row=0, column=0, sticky="w")
+        multiplier_entry = ttk.Entry(multiplier_frame)
+        multiplier_entry.grid(row=0, column=0, sticky="ew")
         multiplier_entry.insert(0, "100")  # Default value
         self.input_widgets['contract_multiplier'] = multiplier_entry
 
@@ -49,7 +50,7 @@ class OptionsTab(BaseTradingTab):
         # Trade direction
         ttk.Label(self.input_frame, text="Direction:").grid(row=row, column=0, sticky="w", padx=(0, 10))
         direction_frame = ttk.Frame(self.input_frame)
-        direction_frame.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        direction_frame.grid(row=row, column=1, sticky="ew", padx=(0, 10))
 
         direction_var = tk.StringVar(value="LONG")
         self.input_widgets['trade_direction'] = direction_var
@@ -128,11 +129,12 @@ class OptionsTab(BaseTradingTab):
     def _create_percentage_method_frame(self) -> None:
         """Create percentage method frame for options."""
         frame = ttk.Frame(self.method_inputs_frame)
+        frame.grid_columnconfigure(1, weight=1)  # Allow entry to expand
         self.method_frames[RiskMethod.PERCENTAGE] = frame
 
         ttk.Label(frame, text="Risk Percentage (1-5%):").grid(row=0, column=0, sticky="w", padx=(0, 10))
-        risk_entry = ttk.Entry(frame, width=10)
-        risk_entry.grid(row=0, column=1, sticky="w", padx=(0, 10))
+        risk_entry = ttk.Entry(frame)
+        risk_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['risk_percentage'] = risk_entry
         self._add_method_validation_label('risk_percentage', frame, 0)
 
@@ -148,11 +150,12 @@ class OptionsTab(BaseTradingTab):
     def _create_fixed_amount_method_frame(self) -> None:
         """Create fixed amount method frame for options."""
         frame = ttk.Frame(self.method_inputs_frame)
+        frame.grid_columnconfigure(1, weight=1)  # Allow entry to expand
         self.method_frames[RiskMethod.FIXED_AMOUNT] = frame
 
         ttk.Label(frame, text="Fixed Risk Amount ($10-500):").grid(row=0, column=0, sticky="w", padx=(0, 10))
-        amount_entry = ttk.Entry(frame, width=10)
-        amount_entry.grid(row=0, column=1, sticky="w", padx=(0, 10))
+        amount_entry = ttk.Entry(frame)
+        amount_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['fixed_risk_amount'] = amount_entry
         self._add_method_validation_label('fixed_risk_amount', frame, 0)
 

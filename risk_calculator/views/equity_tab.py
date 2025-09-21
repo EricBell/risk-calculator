@@ -16,16 +16,16 @@ class EquityTab(BaseTradingTab):
 
         # Stock symbol
         ttk.Label(self.input_frame, text="Stock Symbol:").grid(row=row, column=0, sticky="w", padx=(0, 10))
-        symbol_entry = ttk.Entry(self.input_frame, width=10)
-        symbol_entry.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        symbol_entry = ttk.Entry(self.input_frame)
+        symbol_entry.grid(row=row, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['symbol'] = symbol_entry
         self._add_validation_label('symbol', row)
         row += 1
 
         # Entry price
         ttk.Label(self.input_frame, text="Entry Price ($):").grid(row=row, column=0, sticky="w", padx=(0, 10))
-        entry_price = ttk.Entry(self.input_frame, width=15)
-        entry_price.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        entry_price = ttk.Entry(self.input_frame)
+        entry_price.grid(row=row, column=1, sticky="ew", padx=(0, 10))
         self.input_widgets['entry_price'] = entry_price
         self._add_validation_label('entry_price', row)
         row += 1
@@ -33,7 +33,7 @@ class EquityTab(BaseTradingTab):
         # Trade direction
         ttk.Label(self.input_frame, text="Direction:").grid(row=row, column=0, sticky="w", padx=(0, 10))
         direction_frame = ttk.Frame(self.input_frame)
-        direction_frame.grid(row=row, column=1, sticky="w", padx=(0, 10))
+        direction_frame.grid(row=row, column=1, sticky="ew", padx=(0, 10))
 
         direction_var = tk.StringVar(value="LONG")
         self.input_widgets['trade_direction'] = direction_var
@@ -57,8 +57,8 @@ class EquityTab(BaseTradingTab):
 
         # Add stop loss field
         ttk.Label(frame, text="Stop Loss Price ($):").grid(row=1, column=0, sticky="w", padx=(0, 10), pady=(10, 0))
-        stop_loss_entry = ttk.Entry(frame, width=15)
-        stop_loss_entry.grid(row=1, column=1, sticky="w", padx=(0, 10), pady=(10, 0))
+        stop_loss_entry = ttk.Entry(frame)
+        stop_loss_entry.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(10, 0))
         self.input_widgets['stop_loss_price'] = stop_loss_entry
         self._add_method_validation_label('stop_loss_price', frame, 1)
 
@@ -69,8 +69,8 @@ class EquityTab(BaseTradingTab):
 
         # Add stop loss field
         ttk.Label(frame, text="Stop Loss Price ($):").grid(row=1, column=0, sticky="w", padx=(0, 10), pady=(10, 0))
-        stop_loss_entry = ttk.Entry(frame, width=15)
-        stop_loss_entry.grid(row=1, column=1, sticky="w", padx=(0, 10), pady=(10, 0))
+        stop_loss_entry = ttk.Entry(frame)
+        stop_loss_entry.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(10, 0))
 
         # Note: We need different widget reference for different methods
         # This is handled in show_method_fields by updating the reference

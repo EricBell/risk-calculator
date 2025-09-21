@@ -40,6 +40,9 @@ class MainWindow:
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
         self.root.bind("<KeyPress>", self._on_keypress)
 
+        # Add manual resize detection and responsiveness
+        self.root.bind("<Configure>", self._on_window_configure)
+
     def _setup_window(self) -> None:
         """Configure the main window properties."""
         self.root.title("Risk Calculator - Daytrading Position Sizing")
@@ -51,6 +54,9 @@ class MainWindow:
 
         # Force window manager to respect our settings
         self.root.wm_resizable(True, True)
+
+        # Ensure window manager processes our configuration
+        self.root.update_idletasks()
 
         # Configure grid weights for responsive design
         self.root.grid_columnconfigure(0, weight=1)
@@ -257,6 +263,34 @@ class MainWindow:
         if self.controller and hasattr(self.controller, 'handle_global_keyboard_shortcut'):
             if self.controller.handle_global_keyboard_shortcut(event):
                 return "break"
+
+    def _on_window_configure(self, event) -> None:
+        """Handle window configuration changes (including manual resize)."""
+        # Only handle events for the main root window
+        if event.widget == self.root:
+            # Force immediate update of all child widgets
+            self.root.update_idletasks()
+
+            # Update responsive layout if needed
+            if hasattr(self, 'notebook') and self.notebook:
+                self._update_responsive_layout()
+
+    def _update_responsive_layout(self) -> None:
+        """Update responsive layout after window resize."""
+        try:
+            # Get current window size
+            width = self.root.winfo_width()
+            height = self.root.winfo_height()
+
+            # Update layout for current window size
+            # This ensures all content scales properly
+            for tab_name, tab in self.tabs.items():
+                if hasattr(tab, 'update_layout_for_size'):
+                    tab.update_layout_for_size(width, height)
+
+        except Exception:
+            # Ignore layout update errors to prevent crashes
+            pass
 
     # Public interface methods
     def select_tab(self, tab_name: str) -> None:
@@ -493,7 +527,11 @@ Built with Python and Tkinter"""
     def geometry(self, newGeometry: str = None) -> str:
         """Get or set window geometry (Tkinter compatibility)."""
         if newGeometry is not None:
-            return self.root.geometry(newGeometry)
+            result = self.root.geometry(newGeometry)
+            # Force immediate update to ensure geometry change takes effect
+            self.root.update_idletasks()
+            self.root.update()
+            return result
         return self.root.geometry()
 
     def minsize(self, width: int = None, height: int = None):
@@ -575,6 +613,22 @@ Built with Python and Tkinter"""
         """Update idle tasks (Tkinter compatibility)."""
         return self.root.update_idletasks()
 
+    def force_responsive_update(self):
+        """Force a complete responsive layout update."""
+        try:
+            # Force geometry calculation
+            self.root.update_idletasks()
+
+            # Update all child widgets
+            self.root.update()
+
+            # Trigger responsive layout update
+            if hasattr(self, 'notebook') and self.notebook:
+                self._update_responsive_layout()
+
+        except Exception:
+            pass
+
     def test_resize_capability(self):
         """Test and report window resize capability."""
         print("=== Window Resize Test ===")
@@ -589,17 +643,33 @@ Built with Python and Tkinter"""
         print(f"Testing programmatic resize from {original_geom}")
 
         self.geometry("1000x800")
-        self.update()
+        self.force_responsive_update()
 
         new_geom = self.geometry()
         print(f"After resize: {new_geom}")
         print(f"Programmatic resize working: {original_geom != new_geom}")
 
-        # Add resize event binding for testing manual resize
-        def on_resize(event):
-            if event.widget == self.root:
-                print(f"Manual resize detected: {self.geometry()}")
+        # Test responsive content scaling
+        print("\nTesting responsive content scaling...")
+        self.geometry("1200x900")
+        self.force_responsive_update()
+        print(f"Large window: {self.geometry()}")
 
-        self.root.bind("<Configure>", on_resize, add="+")
-        print("Manual resize detection enabled - try resizing with mouse")
+        self.geometry("900x650")
+        self.force_responsive_update()
+        print(f"Small window: {self.geometry()}")
+
+        # Add enhanced resize event binding for testing manual resize
+        def on_manual_resize(event):
+            if event.widget == self.root:
+                geom = self.geometry()
+                width = self.root.winfo_width()
+                height = self.root.winfo_height()
+                print(f"Manual resize detected: {geom} (actual: {width}x{height})")
+                # Force responsive update on manual resize
+                self.force_responsive_update()
+
+        self.root.bind("<Configure>", on_manual_resize, add="+")
+        print("\nManual resize detection enabled - try resizing with mouse")
+        print("Content should scale responsively when window is resized")
         print("========================")
