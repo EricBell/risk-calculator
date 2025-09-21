@@ -5,7 +5,18 @@ API contract for enhanced UI controller with responsive layout and error display
 
 from abc import ABC, abstractmethod
 from typing import Dict, Optional, Callable, Any
-from .validation_service import FormValidationState, TradeType
+
+# Import validation service types
+try:
+    from .validation_service import FormValidationState, TradeType
+except ImportError:
+    # Import from the same directory when used as standalone
+    try:
+        from validation_service import FormValidationState, TradeType
+    except ImportError:
+        # Create placeholder types for contract testing
+        FormValidationState = object
+        TradeType = object
 
 
 class UIController(ABC):

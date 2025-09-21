@@ -15,7 +15,14 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from specs.contracts.configuration_service import ConfigurationService, WindowConfiguration, ConfigurationError
+# Import from the actual contract location
+try:
+    from specs.three_there_are_several.contracts.configuration_service import ConfigurationService, WindowConfiguration, ConfigurationError
+except ImportError:
+    # Import from local file
+    spec_contracts_path = os.path.join(os.path.dirname(__file__), '..', '..', 'specs', '003-there-are-several', 'contracts')
+    sys.path.insert(0, spec_contracts_path)
+    from configuration_service import ConfigurationService, WindowConfiguration, ConfigurationError
 
 
 class TestConfigurationServiceContract:

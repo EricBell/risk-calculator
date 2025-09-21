@@ -11,10 +11,20 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from specs.contracts.validation_service import (
-    ValidationService, ValidationResult, FieldValidationState,
-    FormValidationState, TradeType, ValidationError
-)
+# Import from the actual contract location
+try:
+    from specs.three_there_are_several.contracts.validation_service import (
+        ValidationService, ValidationResult, FieldValidationState,
+        FormValidationState, TradeType, ValidationError
+    )
+except ImportError:
+    # Import from local file
+    spec_contracts_path = os.path.join(os.path.dirname(__file__), '..', '..', 'specs', '003-there-are-several', 'contracts')
+    sys.path.insert(0, spec_contracts_path)
+    from validation_service import (
+        ValidationService, ValidationResult, FieldValidationState,
+        FormValidationState, TradeType, ValidationError
+    )
 
 
 class TestValidationServiceContract:
