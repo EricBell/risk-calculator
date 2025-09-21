@@ -60,7 +60,26 @@ risk_calculator/
 ## Next Steps
 Ready for `/tasks` command to generate implementation tasks from design artifacts.
 
-## Current Feature: Calculate Position Button Fix ✅ COMPLETED
+## Current Feature: UI Bug Fixes and Window Responsiveness 🔄 IN PROGRESS
+**Branch**: `003-there-are-several`
+**Issue**: Multiple UI bugs - disabled button despite valid data, non-functional menu, inadequate window sizing on high-res displays
+**Specification**: `/specs/003-there-are-several/` (spec.md, plan.md, research.md, quickstart.md)
+
+**Key Requirements**:
+- Fix Calculate Position button enablement across all tabs
+- Implement error message visibility for form validation
+- Make menu Calculate Position functional
+- Add responsive window resizing with proportional layout
+- Persist window configuration (size/position) in ~/.risk_calculator/
+- Support minimum window size (800x600) with high-DPI compatibility
+
+**Technical Approach**:
+- Extend existing BaseController validation system
+- Add WindowConfiguration model with JSON persistence
+- Implement Tkinter grid-based responsive layout
+- Enhance error display with field-specific Label widgets
+
+## Previous Feature: Calculate Position Button Fix ✅ COMPLETED
 **Branch**: `002-the-calculate-position`
 **Issue**: Calculate Position button remains disabled despite complete form input across all tabs
 **Specification**: `/specs/002-the-calculate-position/` (spec.md, plan.md, research.md, quickstart.md)
