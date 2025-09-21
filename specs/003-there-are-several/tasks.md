@@ -39,30 +39,30 @@
 - Tests: `tests/`
 
 ## Phase 3.1: Setup
-- [ ] T001 Create configuration directory structure in `~/.risk_calculator/` with proper permissions
-- [ ] T002 [P] Setup window configuration JSON schema validation in `risk_calculator/models/`
-- [ ] T003 [P] Initialize error message display infrastructure in `risk_calculator/views/`
+- [x] T001 Create configuration directory structure in `~/.risk_calculator/` with proper permissions
+- [x] T002 [P] Setup window configuration JSON schema validation in `risk_calculator/models/`
+- [x] T003 [P] Initialize error message display infrastructure in `risk_calculator/views/`
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
 ### Contract Tests [P] - All Parallel
-- [ ] T004 [P] Contract test ConfigurationService interface in `tests/contract/test_configuration_service_contract.py`
-- [ ] T005 [P] Contract test ValidationService interface in `tests/contract/test_validation_service_contract.py`
-- [ ] T006 [P] Contract test UIController interface in `tests/contract/test_ui_controller_contract.py`
+- [x] T004 [P] Contract test ConfigurationService interface in `tests/contract/test_configuration_service_contract.py`
+- [x] T005 [P] Contract test ValidationService interface in `tests/contract/test_validation_service_contract.py`
+- [x] T006 [P] Contract test UIController interface in `tests/contract/test_ui_controller_contract.py`
 
 ### Data Model Tests [P] - All Parallel
-- [ ] T007 [P] Unit tests for WindowConfiguration model in `tests/unit/test_window_configuration.py`
-- [ ] T008 [P] Unit tests for FieldValidationState model in `tests/unit/test_field_validation_state.py`
-- [ ] T009 [P] Unit tests for FormValidationState model in `tests/unit/test_form_validation_state.py`
+- [x] T007 [P] Unit tests for WindowConfiguration model in `tests/unit/test_window_configuration.py`
+- [x] T008 [P] Unit tests for FieldValidationState model in `tests/unit/test_field_validation_state.py`
+- [x] T009 [P] Unit tests for FormValidationState model in `tests/unit/test_form_validation_state.py`
 
 ### Integration Tests [P] - All Parallel
-- [ ] T010 [P] Integration test: Button enablement with valid data in `tests/integration/test_button_enablement.py`
-- [ ] T011 [P] Integration test: Error message display and clearing in `tests/integration/test_error_messages.py`
-- [ ] T012 [P] Integration test: Menu Calculate Position functionality in `tests/integration/test_menu_calculation.py`
-- [ ] T013 [P] Integration test: Window resize and layout preservation in `tests/integration/test_window_responsiveness.py`
-- [ ] T014 [P] Integration test: Window configuration persistence in `tests/integration/test_window_persistence.py`
-- [ ] T015 [P] Integration test: Cross-platform compatibility in `tests/integration/test_cross_platform.py`
+- [x] T010 [P] Integration test: Button enablement with valid data in `tests/integration/test_button_enablement.py`
+- [x] T011 [P] Integration test: Error message display and clearing in `tests/integration/test_error_messages.py`
+- [x] T012 [P] Integration test: Menu Calculate Position functionality in `tests/integration/test_menu_calculation.py`
+- [x] T013 [P] Integration test: Window resize and layout preservation in `tests/integration/test_window_responsiveness.py`
+- [x] T014 [P] Integration test: Window configuration persistence in `tests/integration/test_window_persistence.py`
+- [x] T015 [P] Integration test: Cross-platform compatibility in `tests/integration/test_cross_platform.py`
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 
