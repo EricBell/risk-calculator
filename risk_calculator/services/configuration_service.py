@@ -15,9 +15,34 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from specs.contracts.configuration_service import ConfigurationService, WindowConfiguration, ConfigurationError
+# Import contract interfaces with fallback
+try:
+    spec_contracts_path = os.path.join(os.path.dirname(__file__), '..', '..', 'specs', '003-there-are-several', 'contracts')
+    sys.path.insert(0, spec_contracts_path)
+    from configuration_service import ConfigurationService as ContractConfigurationService, WindowConfiguration as ContractWindowConfiguration, ConfigurationError
+
+    # Use contract as base class
+    class ConfigurationService(ContractConfigurationService):
+        pass
+
+except ImportError:
+    # Fallback definitions for development
+    from abc import ABC, abstractmethod
+
+    class ConfigurationError(Exception):
+        pass
+
+    class ConfigurationService(ABC):
+        @abstractmethod
+        def save_window_config(self, config) -> bool:
+            pass
+
+        @abstractmethod
+        def load_window_config(self):
+            pass
 from risk_calculator.utils.config_manager import ConfigDirectoryManager
 from risk_calculator.models.window_config_schema import WindowConfigSchema
+from risk_calculator.models.window_configuration import WindowConfiguration
 
 
 class JsonConfigurationService(ConfigurationService):

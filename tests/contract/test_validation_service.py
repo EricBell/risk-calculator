@@ -1,4 +1,4 @@
-import pytest
+import unittest
 from decimal import Decimal
 from risk_calculator.models.equity_trade import EquityTrade
 from risk_calculator.models.option_trade import OptionTrade
@@ -8,10 +8,10 @@ from risk_calculator.models.validation_result import ValidationResult
 from risk_calculator.services.validators import TradeValidationService
 
 
-class TestTradeValidationServiceContract:
+class TestTradeValidationServiceContract(unittest.TestCase):
     """Contract tests for TradeValidationService - these must fail initially"""
 
-    def setup_method(self):
+    def setUp(self):
         self.service = TradeValidationService()
 
     def test_validate_equity_trade_percentage_method_valid(self):
@@ -30,10 +30,10 @@ class TestTradeValidationServiceContract:
         result = self.service.validate_equity_trade(trade)
 
         # Then
-        assert isinstance(result, ValidationResult)
-        assert result.is_valid is True
-        assert len(result.error_messages) == 0
-        assert len(result.field_errors) == 0
+        self.assertIsInstance(result, ValidationResult)
+        self.assertTrue(result.is_valid)
+        self.assertEqual(len(result.error_messages), 0)
+        self.assertEqual(len(result.field_errors), 0)
 
     def test_validate_equity_trade_fixed_amount_method_valid(self):
         """Test valid equity trade with fixed amount method"""
@@ -51,7 +51,7 @@ class TestTradeValidationServiceContract:
         result = self.service.validate_equity_trade(trade)
 
         # Then
-        assert result.is_valid is True
+        self.assertTrue(result.is_valid)
 
     def test_validate_equity_trade_level_based_method_valid(self):
         """Test valid equity trade with level-based method"""
@@ -68,7 +68,7 @@ class TestTradeValidationServiceContract:
         result = self.service.validate_equity_trade(trade)
 
         # Then
-        assert result.is_valid is True
+        self.assertTrue(result.is_valid)
 
     def test_validate_equity_trade_invalid_risk_percentage(self):
         """Test invalid risk percentage (outside 1-5% range)"""
@@ -85,9 +85,9 @@ class TestTradeValidationServiceContract:
         result = self.service.validate_equity_trade(trade)
 
         # Then
-        assert result.is_valid is False
-        assert "risk_percentage" in result.field_errors
-        assert "1% and 5%" in result.field_errors["risk_percentage"]
+        self.assertFalse(result.is_valid)
+        self.assertTrue("risk_percentage" in result.field_errors)
+        self.assertTrue("1% and 5%" in result.field_errors["risk_percentage"])
 
     def test_validate_equity_trade_invalid_stop_loss_direction(self):
         """Test invalid stop loss direction for long position"""
@@ -105,9 +105,9 @@ class TestTradeValidationServiceContract:
         result = self.service.validate_equity_trade(trade)
 
         # Then
-        assert result.is_valid is False
-        assert "stop_loss_price" in result.field_errors
-        assert "below entry price" in result.field_errors["stop_loss_price"]
+        self.assertFalse(result.is_valid)
+        self.assertTrue("stop_loss_price" in result.field_errors)
+        self.assertTrue("below entry price" in result.field_errors["stop_loss_price"])
 
     def test_validate_equity_trade_fixed_amount_exceeds_account_limit(self):
         """Test fixed amount exceeding 5% of account size"""
@@ -124,15 +124,15 @@ class TestTradeValidationServiceContract:
         result = self.service.validate_equity_trade(trade)
 
         # Then
-        assert result.is_valid is False
-        assert "fixed_risk_amount" in result.field_errors
-        assert "5% of account size" in result.field_errors["fixed_risk_amount"]
+        self.assertFalse(result.is_valid)
+        self.assertTrue("fixed_risk_amount" in result.field_errors)
+        self.assertTrue("5% of account size" in result.field_errors["fixed_risk_amount"])
 
 
-class TestOptionValidationContract:
+class TestOptionValidationContract(unittest.TestCase):
     """Contract tests for option validation"""
 
-    def setup_method(self):
+    def setUp(self):
         self.service = TradeValidationService()
 
     def test_validate_option_trade_percentage_method_valid(self):
@@ -150,7 +150,7 @@ class TestOptionValidationContract:
         result = self.service.validate_option_trade(trade)
 
         # Then
-        assert result.is_valid is True
+        self.assertTrue(result.is_valid)
 
     def test_validate_option_trade_level_based_not_supported(self):
         """Test that level-based method is rejected for options"""
@@ -165,15 +165,15 @@ class TestOptionValidationContract:
         result = self.service.validate_option_trade(trade)
 
         # Then
-        assert result.is_valid is False
-        assert "risk_method" in result.field_errors
-        assert "not supported for options" in result.field_errors["risk_method"]
+        self.assertFalse(result.is_valid)
+        self.assertTrue("risk_method" in result.field_errors)
+        self.assertTrue("not supported for options" in result.field_errors["risk_method"])
 
 
-class TestFutureValidationContract:
+class TestFutureValidationContract(unittest.TestCase):
     """Contract tests for futures validation"""
 
-    def setup_method(self):
+    def setUp(self):
         self.service = TradeValidationService()
 
     def test_validate_future_trade_all_methods_supported(self):
@@ -194,7 +194,7 @@ class TestFutureValidationContract:
         result = self.service.validate_future_trade(trade)
 
         # Then
-        assert result.is_valid is True
+        self.assertTrue(result.is_valid)
 
     def test_validate_future_trade_margin_exceeds_account(self):
         """Test validation when margin requirement exceeds account size"""
@@ -214,6 +214,9 @@ class TestFutureValidationContract:
         result = self.service.validate_future_trade(trade)
 
         # Then
-        assert result.is_valid is False
-        assert "margin_requirement" in result.field_errors
-        assert "exceeds account size" in result.field_errors["margin_requirement"]
+        self.assertFalse(result.is_valid)
+        self.assertTrue("margin_requirement" in result.field_errors)
+        self.assertTrue("exceeds account size" in result.field_errors["margin_requirement"])
+
+if __name__ == '__main__':
+    unittest.main()
