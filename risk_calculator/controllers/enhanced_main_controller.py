@@ -175,6 +175,13 @@ class EnhancedMainController(WindowController):
             tuple: (adjusted_width, adjusted_height, adjusted_x, adjusted_y)
         """
         try:
+            # Enforce minimum size constraints first
+            min_width = 800
+            min_height = 600
+
+            adjusted_width = max(width, min_width)
+            adjusted_height = max(height, min_height)
+
             # Get screen dimensions
             screen_width = self.main_window.winfo_screenwidth()
             screen_height = self.main_window.winfo_screenheight()
@@ -182,15 +189,15 @@ class EnhancedMainController(WindowController):
             # Create temporary configuration for validation
             from datetime import datetime
             temp_config = WindowConfiguration(
-                width=width,
-                height=height,
+                width=adjusted_width,
+                height=adjusted_height,
                 x=x,
                 y=y,
                 maximized=False,
                 last_updated=datetime.now()
             )
 
-            # Validate using configuration service
+            # Validate using configuration service (for screen bounds)
             validated_config = self.config_service.validate_window_bounds(temp_config)
 
             return (validated_config.width, validated_config.height,
@@ -198,7 +205,7 @@ class EnhancedMainController(WindowController):
 
         except Exception:
             # Fallback to safe defaults
-            return (1024, 768, 100, 100)
+            return (800, 600, 100, 100)
 
     def setup_window_event_handlers(self) -> None:
         """Setup event handlers for window resize, move, and state changes."""
@@ -343,6 +350,12 @@ class EnhancedMainController(WindowController):
             position_part = '+'.join(current_geometry.split('+')[1:])
             new_geometry = f"{validated_width}x{validated_height}+{position_part}"
             self.main_window.geometry(new_geometry)
+
+            # Force immediate update for testing
+            try:
+                self.main_window.update()
+            except Exception:
+                pass
 
         except Exception:
             pass

@@ -14,9 +14,18 @@ from .future_tab import FuturesTab
 class MainWindow:
     """Main application window with tabbed interface for different asset types."""
 
-    def __init__(self, controller=None):
-        self.controller = controller
-        self.root = tk.Tk()
+    def __init__(self, root_or_controller=None):
+        # Handle both controller and root window parameters for compatibility
+        if root_or_controller is None:
+            self.controller = None
+            self.root = tk.Tk()
+        elif hasattr(root_or_controller, 'title'):  # It's a Tkinter root window
+            self.controller = None
+            self.root = root_or_controller
+        else:  # It's a controller
+            self.controller = root_or_controller
+            self.root = tk.Tk()
+
         self.tabs: Dict[str, Any] = {}
         self.current_tab_name: Optional[str] = None
 
@@ -145,7 +154,7 @@ class MainWindow:
     def _create_tabs(self) -> None:
         """Create individual trading tabs."""
         # Create Equity tab
-        if self.controller:
+        if self.controller and hasattr(self.controller, 'create_equity_controller'):
             equity_controller = self.controller.create_equity_controller(None)
             self.tabs['equity'] = EquityTab(self.notebook, equity_controller)
             equity_controller.view = self.tabs['equity']  # Set view reference
@@ -155,7 +164,7 @@ class MainWindow:
         self.notebook.add(self.tabs['equity'], text="Equity Trading")
 
         # Create Options tab
-        if self.controller:
+        if self.controller and hasattr(self.controller, 'create_option_controller'):
             option_controller = self.controller.create_option_controller(None)
             self.tabs['option'] = OptionsTab(self.notebook, option_controller)
             option_controller.view = self.tabs['option']  # Set view reference
@@ -165,7 +174,7 @@ class MainWindow:
         self.notebook.add(self.tabs['option'], text="Options Trading")
 
         # Create Futures tab
-        if self.controller:
+        if self.controller and hasattr(self.controller, 'create_future_controller'):
             future_controller = self.controller.create_future_controller(None)
             self.tabs['future'] = FuturesTab(self.notebook, future_controller)
             future_controller.view = self.tabs['future']  # Set view reference
@@ -470,3 +479,89 @@ Built with Python and Tkinter"""
 
         # Recreate tabs with controller
         self._create_tabs()
+
+    # Enhanced controller compatibility methods
+    def geometry(self, newGeometry: str = None) -> str:
+        """Get or set window geometry (Tkinter compatibility)."""
+        if newGeometry is not None:
+            return self.root.geometry(newGeometry)
+        return self.root.geometry()
+
+    def minsize(self, width: int = None, height: int = None):
+        """Set minimum window size (Tkinter compatibility)."""
+        if width is not None and height is not None:
+            return self.root.minsize(width, height)
+        return self.root.minsize()
+
+    def maxsize(self, width: int = None, height: int = None):
+        """Set maximum window size (Tkinter compatibility)."""
+        if width is not None and height is not None:
+            return self.root.maxsize(width, height)
+        return self.root.maxsize()
+
+    def state(self, newstate: str = None):
+        """Get or set window state (Tkinter compatibility)."""
+        if newstate is not None:
+            return self.root.state(newstate)
+        return self.root.state()
+
+    def attributes(self, *args):
+        """Get or set window attributes (Tkinter compatibility)."""
+        return self.root.attributes(*args)
+
+    def winfo_screenwidth(self) -> int:
+        """Get screen width (Tkinter compatibility)."""
+        return self.root.winfo_screenwidth()
+
+    def winfo_screenheight(self) -> int:
+        """Get screen height (Tkinter compatibility)."""
+        return self.root.winfo_screenheight()
+
+    def bind(self, sequence: str, func, add: str = None):
+        """Bind event to window (Tkinter compatibility)."""
+        return self.root.bind(sequence, func, add)
+
+    def protocol(self, name: str, func):
+        """Set window protocol handler (Tkinter compatibility)."""
+        return self.root.protocol(name, func)
+
+    def after(self, ms: int, func=None):
+        """Schedule function call (Tkinter compatibility)."""
+        return self.root.after(ms, func)
+
+    def after_cancel(self, id):
+        """Cancel scheduled function call (Tkinter compatibility)."""
+        return self.root.after_cancel(id)
+
+    def grid_rowconfigure(self, index, **options):
+        """Configure grid row (Tkinter compatibility)."""
+        return self.root.grid_rowconfigure(index, **options)
+
+    def grid_columnconfigure(self, index, **options):
+        """Configure grid column (Tkinter compatibility)."""
+        return self.root.grid_columnconfigure(index, **options)
+
+    def update_layout_for_size(self, width: int, height: int):
+        """Update layout for new window size."""
+        # Placeholder for responsive layout updates
+        pass
+
+    def get_main_content(self):
+        """Get main content container for responsive layout."""
+        return getattr(self, 'notebook', None)
+
+    def get_tab_container(self):
+        """Get tab container for responsive layout."""
+        return getattr(self, 'notebook', None)
+
+    def destroy(self):
+        """Destroy window (Tkinter compatibility)."""
+        return self.root.destroy()
+
+    def update(self):
+        """Update window (Tkinter compatibility)."""
+        return self.root.update()
+
+    def update_idletasks(self):
+        """Update idle tasks (Tkinter compatibility)."""
+        return self.root.update_idletasks()

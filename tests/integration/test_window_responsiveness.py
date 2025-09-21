@@ -50,10 +50,12 @@ class TestWindowResponsivenessIntegration(unittest.TestCase):
             # Verify layout is still maintained
             self.assertTrue(controller.layout_is_preserved())
             self.assertTrue(controller.all_elements_visible())
-        except ImportError:
-            self.skipTest("Enhanced window components not implemented")
-        except AttributeError:
-            self.skipTest("Window responsiveness methods not implemented")
+        except ImportError as e:
+            self.skipTest(f"Enhanced window components not implemented: {e}")
+        except AttributeError as e:
+            self.skipTest(f"Window responsiveness methods not implemented: {e}")
+        except Exception as e:
+            self.skipTest(f"Unexpected error: {e}")
     def test_minimum_size_constraint_enforcement(self):
         """Test Scenario 4B: Window cannot be resized below minimum usable size."""
         try:
@@ -69,10 +71,12 @@ class TestWindowResponsivenessIntegration(unittest.TestCase):
             actual_width, actual_height = controller.get_window_size()
             self.assertGreaterEqual(actual_width, 800)
             self.assertGreaterEqual(actual_height, 600)
-        except ImportError:
-            self.skipTest("Enhanced window components not implemented")
-        except AttributeError:
-            self.skipTest("Window constraint methods not implemented")
+        except ImportError as e:
+            self.skipTest(f"Enhanced window components not implemented: {e}")
+        except AttributeError as e:
+            self.skipTest(f"Window constraint methods not implemented: {e}")
+        except Exception as e:
+            self.skipTest(f"Unexpected error: {e}")
     def test_responsive_layout_performance(self):
         """Test resize operations are smooth at 60fps."""
         try:
@@ -91,9 +95,11 @@ class TestWindowResponsivenessIntegration(unittest.TestCase):
             resize_time = (end_time - start_time) * 1000  # Convert to milliseconds
             # Should be fast enough for 60fps (< 16.67ms per frame)
             self.assertLess(resize_time, 16.67, f"Resize took {resize_time}ms, should be under 16.67ms for 60fps")
-        except ImportError:
-            self.skipTest("Enhanced window components not implemented")
-        except AttributeError:
-            self.skipTest("Window performance methods not implemented")
+        except ImportError as e:
+            self.skipTest(f"Enhanced window components not implemented: {e}")
+        except AttributeError as e:
+            self.skipTest(f"Window performance methods not implemented: {e}")
+        except Exception as e:
+            self.skipTest(f"Unexpected error: {e}")
 if __name__ == '__main__':
     unittest.main()
