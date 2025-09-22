@@ -1,0 +1,17 @@
+Collecting PySide6
+  Downloading pyside6-6.9.2-cp39-abi3-manylinux_2_28_x86_64.whl.metadata (5.3 kB)
+Collecting shiboken6==6.9.2 (from PySide6)
+  Downloading shiboken6-6.9.2-cp39-abi3-manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting PySide6_Essentials==6.9.2 (from PySide6)
+  Downloading pyside6_essentials-6.9.2-cp39-abi3-manylinux_2_28_x86_64.whl.metadata (3.6 kB)
+Collecting PySide6_Addons==6.9.2 (from PySide6)
+  Downloading pyside6_addons-6.9.2-cp39-abi3-manylinux_2_28_x86_64.whl.metadata (4.0 kB)
+Downloading pyside6-6.9.2-cp39-abi3-manylinux_2_28_x86_64.whl (558 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 558.2/558.2 kB 2.4 MB/s eta 0:00:00
+Downloading pyside6_addons-6.9.2-cp39-abi3-manylinux_2_28_x86_64.whl (167.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 167.0/167.0 MB 4.5 MB/s eta 0:00:00
+Downloading pyside6_essentials-6.9.2-cp39-abi3-manylinux_2_28_x86_64.whl (96.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 96.6/96.6 MB 3.0 MB/s eta 0:00:00
+Downloading shiboken6-6.9.2-cp39-abi3-manylinux_2_28_x86_64.whl (206 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 206.7/206.7 kB 3.8 MB/s eta 0:00:00
+Installing collected packages: shiboken6, PySide6_Essentials, PySide6_Addons, PySide6
