@@ -60,24 +60,25 @@ risk_calculator/
 ## Next Steps
 Ready for `/tasks` command to generate implementation tasks from design artifacts.
 
-## Current Feature: UI Bug Fixes and Window Responsiveness 🔄 IN PROGRESS
-**Branch**: `003-there-are-several`
-**Issue**: Multiple UI bugs - disabled button despite valid data, non-functional menu, inadequate window sizing on high-res displays
-**Specification**: `/specs/003-there-are-several/` (spec.md, plan.md, research.md, quickstart.md)
+## Current Feature: Qt Migration with Responsive Window Management 🔄 IN PROGRESS
+**Branch**: `004-i-want-to`
+**Issue**: Migrate from Tkinter to Qt framework while adding responsive window management for high-DPI display support
+**Specification**: `/specs/004-i-want-to/` (spec.md, plan.md, research.md, quickstart.md)
 
 **Key Requirements**:
-- Fix Calculate Position button enablement across all tabs
-- Implement error message visibility for form validation
-- Make menu Calculate Position functional
-- Add responsive window resizing with proportional layout
-- Persist window configuration (size/position) in ~/.risk_calculator/
-- Support minimum window size (800x600) with high-DPI compatibility
+- Migrate entire UI from Tkinter to Qt framework (PySide6)
+- Implement proportional UI scaling during window resize
+- Support high-resolution displays with appropriate default sizing
+- Persist window configuration (size/position) in user's home directory
+- Maintain all existing risk calculation functionality with identical accuracy
+- Preserve cross-platform compatibility (Windows and Linux)
 
 **Technical Approach**:
-- Extend existing BaseController validation system
-- Add WindowConfiguration model with JSON persistence
-- Implement Tkinter grid-based responsive layout
-- Enhance error display with field-specific Label widgets
+- Replace Tkinter widgets with Qt equivalents (QLineEdit, QLabel, QPushButton)
+- Implement QSettings for cross-platform configuration persistence
+- Use Qt's built-in high-DPI scaling and responsive layout managers
+- Preserve existing business logic and calculation services
+- Create adapter pattern for controller integration with Qt views
 
 ## Previous Feature: Calculate Position Button Fix ✅ COMPLETED
 **Branch**: `002-the-calculate-position`
