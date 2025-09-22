@@ -119,6 +119,31 @@ class ResponsiveLayoutInterface(ABC):
         """
         pass
 
+    @abstractmethod
+    def get_current_scale_factors(self) -> Tuple[float, float]:
+        """
+        Get current scaling factors.
+
+        Returns:
+            Tuple[float, float]: (x_scale, y_scale) factors
+        """
+        pass
+
+    @abstractmethod
+    def reset_scaling(self) -> None:
+        """Reset scaling to default values."""
+        pass
+
+    @abstractmethod
+    def is_scaling_active(self) -> bool:
+        """
+        Check if scaling is currently active.
+
+        Returns:
+            bool: True if scaling is active
+        """
+        pass
+
 
 class DisplayProfileInterface(ABC):
     """Interface for display profile detection"""
@@ -150,5 +175,48 @@ class DisplayProfileInterface(ABC):
 
         Returns:
             float: DPI scale factor (1.0 = 100%, 2.0 = 200%)
+        """
+        pass
+
+    @abstractmethod
+    def get_screen_dimensions(self) -> Tuple[int, int]:
+        """
+        Get screen dimensions (width, height).
+
+        Returns:
+            Tuple[int, int]: (width, height)
+        """
+        pass
+
+    @abstractmethod
+    def get_platform_info(self) -> str:
+        """
+        Get platform information.
+
+        Returns:
+            str: Platform name
+        """
+        pass
+
+    @abstractmethod
+    def calculate_optimal_window_size(self, base_size: Tuple[int, int]) -> Tuple[int, int]:
+        """
+        Calculate optimal window size based on DPI scaling.
+
+        Args:
+            base_size: Base window size (width, height)
+
+        Returns:
+            Tuple[int, int]: Optimal size (width, height)
+        """
+        pass
+
+    @abstractmethod
+    def supports_high_dpi_scaling(self) -> bool:
+        """
+        Check if platform supports high-DPI scaling.
+
+        Returns:
+            bool: True if high-DPI scaling is supported
         """
         pass

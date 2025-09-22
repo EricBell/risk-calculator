@@ -130,6 +130,56 @@ class QtMainWindowInterface(ABC):
         """Restore window state from configuration"""
         pass
 
+    @abstractmethod
+    def set_window_title(self, title: str) -> None:
+        """
+        Set the window title.
+
+        Args:
+            title: New window title
+        """
+        pass
+
+    @abstractmethod
+    def get_current_tab(self) -> str:
+        """
+        Get the name of the currently active tab.
+
+        Returns:
+            str: Name of current tab
+        """
+        pass
+
+    @abstractmethod
+    def set_current_tab(self, tab_name: str) -> None:
+        """
+        Set the currently active tab.
+
+        Args:
+            tab_name: Name of tab to activate
+        """
+        pass
+
+    @abstractmethod
+    def enable_menu_items(self, items: Dict[str, bool]) -> None:
+        """
+        Enable/disable menu items.
+
+        Args:
+            items: Dict mapping menu item names to enabled state
+        """
+        pass
+
+    @abstractmethod
+    def show_about_dialog(self) -> None:
+        """Show the about dialog"""
+        pass
+
+    @abstractmethod
+    def close_application(self) -> None:
+        """Close the application"""
+        pass
+
 
 class QtTradingTabInterface(ABC):
     """Interface for individual trading tabs (Equity, Options, Futures)"""
@@ -192,4 +242,64 @@ class QtTradingTabInterface(ABC):
         Args:
             callback: Function to call when calculate is clicked
         """
+        pass
+
+    @abstractmethod
+    def get_risk_method(self) -> str:
+        """
+        Get the currently selected risk method.
+
+        Returns:
+            str: Selected risk method
+        """
+        pass
+
+    @abstractmethod
+    def set_risk_method(self, method: str) -> None:
+        """
+        Set the risk calculation method.
+
+        Args:
+            method: Risk method to set
+        """
+        pass
+
+    @abstractmethod
+    def validate_inputs(self) -> bool:
+        """
+        Validate all input fields.
+
+        Returns:
+            bool: True if all inputs are valid
+        """
+        pass
+
+    @abstractmethod
+    def reset_form(self) -> None:
+        """Reset all form fields to default values"""
+        pass
+
+    @abstractmethod
+    def enable_calculate_button(self, enabled: bool) -> None:
+        """
+        Enable/disable the calculate button.
+
+        Args:
+            enabled: True to enable, False to disable
+        """
+        pass
+
+    @abstractmethod
+    def show_validation_errors(self, errors: Dict[str, str]) -> None:
+        """
+        Show validation errors for fields.
+
+        Args:
+            errors: Dict mapping field names to error messages
+        """
+        pass
+
+    @abstractmethod
+    def clear_validation_errors(self) -> None:
+        """Clear all validation error displays"""
         pass

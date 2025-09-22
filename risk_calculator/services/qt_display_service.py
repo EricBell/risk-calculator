@@ -120,6 +120,97 @@ class QtDisplayService:
 
         return (geometry.x(), geometry.y(), geometry.width(), geometry.height())
 
+    def get_screen_dimensions(self) -> Tuple[int, int]:
+        """
+        Get screen dimensions (width, height).
+
+        Returns:
+            Tuple[int, int]: (width, height)
+        """
+        app = QApplication.instance()
+        if not app:
+            # Fallback values
+            return (1920, 1080)
+
+        primary_screen = app.primaryScreen()
+        geometry = primary_screen.geometry()
+
+        return (geometry.width(), geometry.height())
+
+    def calculate_optimal_window_size(self, base_size: Tuple[int, int]) -> Tuple[int, int]:
+        """
+        Calculate optimal window size based on DPI scaling.
+
+        Args:
+            base_size: Base window size (width, height)
+
+        Returns:
+            Tuple[int, int]: Optimal size (width, height)
+        """
+        try:
+            scale_factor = self.get_dpi_scale_factor()
+            width = int(base_size[0] * scale_factor)
+            height = int(base_size[1] * scale_factor)
+            return (width, height)
+        except Exception:
+            return base_size
+
+    def get_platform_info(self) -> str:
+        """
+        Get platform information.
+
+        Returns:
+            str: Platform name
+        """
+        system_platform = platform.system()
+        platform_map = {
+            "Windows": "Windows",
+            "Linux": "Linux",
+            "Darwin": "macOS"
+        }
+        return platform_map.get(system_platform, "Other")
+
+    def get_screen_count(self) -> int:
+        """
+        Get number of available screens.
+
+        Returns:
+            int: Number of screens
+        """
+        app = QApplication.instance()
+        if not app:
+            return 1
+
+        return len(app.screens())
+
+    def get_primary_screen_geometry(self) -> Optional[Tuple[int, int, int, int]]:
+        """
+        Get primary screen geometry.
+
+        Returns:
+            Optional[Tuple[int, int, int, int]]: (x, y, width, height) or None
+        """
+        app = QApplication.instance()
+        if not app:
+            return None
+
+        primary_screen = app.primaryScreen()
+        geometry = primary_screen.geometry()
+        return (geometry.x(), geometry.y(), geometry.width(), geometry.height())
+
+    def supports_high_dpi_scaling(self) -> bool:
+        """
+        Check if platform supports high-DPI scaling.
+
+        Returns:
+            bool: True if high-DPI scaling is supported
+        """
+        try:
+            # All Qt-supported platforms support high-DPI scaling
+            return True
+        except Exception:
+            return False
+
     def get_available_geometry(self) -> Tuple[int, int, int, int]:
         """
         Get available screen geometry excluding taskbars, etc.

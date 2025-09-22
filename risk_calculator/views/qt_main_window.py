@@ -186,7 +186,23 @@ class QtMainWindow(QMainWindow):
         if self.status_bar:
             self.status_bar.showMessage(message, timeout)
 
-    def get_current_tab(self) -> Optional[QWidget]:
+    def get_current_tab(self) -> str:
+        """
+        Get the name of the currently active tab.
+
+        Returns:
+            str: Name of current tab
+        """
+        if not self.tab_widget:
+            return ""
+
+        current_index = self.tab_widget.currentIndex()
+        if current_index >= 0:
+            return self.tab_widget.tabText(current_index)
+
+        return ""
+
+    def get_current_tab_widget(self) -> Optional[QWidget]:
         """
         Get currently selected tab widget.
 
@@ -406,3 +422,61 @@ class QtMainWindow(QMainWindow):
 
         # Clear startup flag after first resize
         self.is_maximized_on_startup = False
+
+    def set_window_title(self, title: str) -> None:
+        """
+        Set the window title.
+
+        Args:
+            title: New window title
+        """
+        self.setWindowTitle(title)
+
+
+    def set_current_tab(self, tab_name: str) -> None:
+        """
+        Set the currently active tab.
+
+        Args:
+            tab_name: Name of tab to activate
+        """
+        if not self.tab_widget:
+            return
+
+        # Find tab by name
+        for i in range(self.tab_widget.count()):
+            if self.tab_widget.tabText(i).lower() == tab_name.lower():
+                self.tab_widget.setCurrentIndex(i)
+                break
+
+    def enable_menu_items(self, items: Dict[str, bool]) -> None:
+        """
+        Enable/disable menu items.
+
+        Args:
+            items: Dict mapping menu item names to enabled state
+        """
+        if not self.menu_bar:
+            return
+
+        # Find and enable/disable menu actions
+        for action in self.findChildren(QAction):
+            action_name = action.text().replace("&", "").lower()
+            if action_name in items:
+                action.setEnabled(items[action_name])
+
+    def show_about_dialog(self) -> None:
+        """Show the about dialog"""
+        try:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.about(
+                self,
+                "About Risk Calculator",
+                "Risk Calculator v1.0\n\nA professional risk calculation tool for day trading.\n\nBuilt with Qt6 and Python."
+            )
+        except Exception:
+            self.show_status_message("Could not show about dialog", 3000)
+
+    def close_application(self) -> None:
+        """Close the application"""
+        QApplication.quit()
