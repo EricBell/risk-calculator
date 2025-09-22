@@ -4,8 +4,19 @@ Defines the interface for Qt-based views replacing Tkinter components.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Callable
-from PyQt6.QtWidgets import QWidget
+from typing import Dict, Any, Optional, Callable, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+
+try:
+    from PySide6.QtWidgets import QWidget
+    HAS_QT = True
+except ImportError:
+    HAS_QT = False
+    # Create dummy class for type hints when Qt not available
+    class QWidget:
+        pass
 
 
 class QtViewInterface(ABC):

@@ -8,8 +8,13 @@ import sys
 import os
 import time
 import gc
-import psutil
 from unittest.mock import patch
+
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 # Skip this test if running in CI or headless environment
 pytest_skip_reason = "Requires display and Qt GUI for performance testing"
@@ -28,6 +33,7 @@ HAS_DISPLAY = os.environ.get('DISPLAY') is not None or sys.platform == 'win32'
 
 @pytest.mark.skipif(not HAS_QT, reason=pytest_skip_reason)
 @pytest.mark.skipif(not HAS_DISPLAY, reason="No display available")
+@pytest.mark.skipif(not HAS_PSUTIL, reason="psutil not available")
 @pytest.mark.performance
 class TestMemoryUsageValidation:
     """Memory usage validation tests."""
@@ -36,7 +42,7 @@ class TestMemoryUsageValidation:
         """Setup test environment."""
         self.app = None
         self.main_window = None
-        self.process = psutil.Process()
+        self.process = psutil.Process() if HAS_PSUTIL else None
         self.baseline_memory = None
 
     def teardown_method(self):

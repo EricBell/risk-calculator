@@ -3,7 +3,12 @@ Qt Responsive Layout Service
 Handles responsive scaling and layout management for Qt widgets.
 """
 
-from typing import Tuple, Dict, Any, Optional, Union
+from typing import Tuple, Dict, Any, Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+    from PySide6.QtCore import QSize, QRect
+    from PySide6.QtGui import QFont
 
 try:
     from PySide6.QtWidgets import QWidget, QApplication
@@ -12,6 +17,15 @@ try:
     HAS_QT = True
 except ImportError:
     HAS_QT = False
+    # Create dummy classes for type hints when Qt not available
+    class QWidget:
+        pass
+    class QSize:
+        pass
+    class QRect:
+        pass
+    class QFont:
+        pass
 
 from ..models.ui_layout_state import UILayoutState
 from ..models.display_profile import DisplayProfile

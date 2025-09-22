@@ -7,8 +7,13 @@ import pytest
 import sys
 import os
 import time
-import psutil
 from unittest.mock import patch
+
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 # Skip this test if running in CI or headless environment
 pytest_skip_reason = "Requires display and Qt GUI for performance testing"

@@ -14,10 +14,21 @@ try:
     HAS_QT_SERVICES = True
 except ImportError:
     HAS_QT_SERVICES = False
+    # Create mock classes for testing
+    class QtDisplayService:
+        pass
+    class DisplayProfile:
+        pass
 
-# Mock Qt components if not available
-if not HAS_QT_SERVICES:
-    pytest.skip("Qt services not available", allow_module_level=True)
+# Skip if Qt not available (additional check for PySide6)
+try:
+    import PySide6
+    HAS_PYSIDE = True
+except ImportError:
+    HAS_PYSIDE = False
+
+if not HAS_QT_SERVICES or not HAS_PYSIDE:
+    pytest.skip("Qt services or PySide6 not available", allow_module_level=True)
 
 
 class TestDisplayProfileDetection:
