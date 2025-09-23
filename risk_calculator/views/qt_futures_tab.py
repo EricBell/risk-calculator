@@ -9,13 +9,15 @@ try:
     from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
                                    QLabel, QLineEdit, QPushButton, QFrame, QTextEdit,
                                    QRadioButton, QButtonGroup, QComboBox, QGroupBox)
-    from PySide6.QtCore import Signal
+    from PySide6.QtCore import Signal, QTimer
     HAS_QT = True
 except ImportError:
     HAS_QT = False
 
 from .qt_base_view import QtBaseView
 from ..models.risk_method import RiskMethod
+from ..services.enhanced_form_validation_service import EnhancedFormValidationService
+from ..services.button_state_service import ButtonStateService
 
 
 class QtFuturesTab(QtBaseView):
@@ -46,6 +48,16 @@ class QtFuturesTab(QtBaseView):
 
         # Result display
         self.result_display: Optional[QTextEdit] = None
+
+        # Real-time validation services
+        self.validation_service = EnhancedFormValidationService()
+        self.button_service = ButtonStateService()
+
+        # Validation timer for debouncing
+        self.validation_timer = QTimer()
+        self.validation_timer.setSingleShot(True)
+        self.validation_timer.timeout.connect(self._perform_validation)
+        self.validation_delay_ms = 300  # 300ms debounce
 
         # Margin analysis display
         self.margin_display: Optional[QLabel] = None
@@ -390,11 +402,30 @@ class QtFuturesTab(QtBaseView):
 
     def setup_input_fields(self) -> None:
         """Setup input field connections and validation."""
-        # Field connections are handled in QtBaseView
+        # Connect all input fields to real-time validation
+        for field_name, field_widget in self.input_fields.items():
+            if isinstance(field_widget, QLineEdit):
+                # Connect text change signal with debouncing
+                field_widget.textChanged.connect(self._on_field_changed)
+                # Also connect editing finished for immediate validation
+                field_widget.editingFinished.connect(self._perform_validation)
+
+        # Connect risk method change to validation
+        if self.risk_method_combo:
+            self.risk_method_combo.currentIndexChanged.connect(self._on_method_changed)
+
+        # Connect direction change to validation
+        if self.direction_group:
+            self.direction_group.buttonClicked.connect(self._perform_validation)
+
         # Connect field changes to update margin analysis
-        for field_name, field in self.form_fields.items():
+        for field_name, field in self.input_fields.items():
             if field_name in ["margin_requirement", "account_size"]:
                 field.textChanged.connect(self._update_margin_analysis)
+
+        # Setup initial validation state
+        self.validation_service.set_risk_method("futures")  # Futures use special method
+        self._perform_validation()
 
     def setup_result_display(self) -> None:
         """Setup result display formatting."""
@@ -643,3 +674,168 @@ class QtFuturesTab(QtBaseView):
             "level_based": RiskMethod.LEVEL_BASED
         }
         return method_map.get(risk_method)
+
+    def _on_field_changed(self) -> None:
+        """Handle field text change with debouncing."""
+        # Restart the validation timer to debounce rapid changes
+        self.validation_timer.start(self.validation_delay_ms)
+
+    def _on_method_changed(self) -> None:
+        """Handle risk method change."""
+        # Update validation service with futures method
+        self.validation_service.set_risk_method("futures")
+        # Perform immediate validation
+        self._perform_validation()
+
+    def _perform_validation(self) -> None:
+        """Perform real-time form validation and update UI."""
+        try:
+            # Get current form data
+            form_data = self.get_form_data()
+            current_method = "futures"  # Futures always use futures method
+
+            # Update validation service
+            self.validation_service.set_risk_method(current_method)
+
+            # Perform validation
+            errors = self.validation_service.validate_form(form_data)
+
+            # Update error displays
+            self._update_error_displays(errors)
+
+            # Update button state
+            self._update_button_state(form_data, current_method)
+
+            # Update field styling
+            self._update_field_styling(errors)
+
+        except Exception as e:
+            # Silently handle validation errors to prevent UI crashes
+            print(f"Validation error in futures tab: {e}")
+
+    def _update_error_displays(self, errors: Dict[str, str]) -> None:
+        """
+        Update error label displays.
+
+        Args:
+            errors: Dictionary of field names to error messages
+        """
+        # Clear all error labels first
+        for field_name in self.input_fields.keys():
+            error_label = self.error_labels.get(field_name)
+            if error_label:
+                error_label.setText("")
+                error_label.hide()
+
+        # Show errors for fields with validation issues
+        for field_name, error_message in errors.items():
+            error_label = self.error_labels.get(field_name)
+            if error_label:
+                error_label.setText(error_message)
+                error_label.show()
+                # Apply error styling
+                error_label.setStyleSheet("color: #d32f2f; font-size: 10px;")
+
+    def _update_button_state(self, form_data: Dict[str, Any], risk_method: str) -> None:
+        """
+        Update calculate button state.
+
+        Args:
+            form_data: Current form data
+            risk_method: Current risk method
+        """
+        button_id = "futures_calculate_button"
+
+        # Update button model in button service
+        self.button_service.update_button_model(button_id, form_data, risk_method)
+
+        # Get button state
+        should_enable = self.button_service.should_enable_button(form_data, risk_method)
+        tooltip = self.button_service.get_button_tooltip(form_data, risk_method)
+
+        # Update calculate button if it exists
+        if hasattr(self, 'calculate_button') and self.calculate_button:
+            self.calculate_button.setEnabled(should_enable)
+            self.calculate_button.setToolTip(tooltip or "")
+
+    def _update_field_styling(self, errors: Dict[str, str]) -> None:
+        """
+        Update field styling based on validation results.
+
+        Args:
+            errors: Dictionary of field names to error messages
+        """
+        for field_name, field_widget in self.input_fields.items():
+            if isinstance(field_widget, QLineEdit):
+                if field_name in errors:
+                    # Apply error styling
+                    field_widget.setStyleSheet("""
+                        QLineEdit {
+                            border: 2px solid #d32f2f;
+                            border-radius: 4px;
+                            padding: 4px;
+                            background-color: #fff5f5;
+                        }
+                        QLineEdit:focus {
+                            border: 2px solid #d32f2f;
+                            background-color: #ffffff;
+                        }
+                    """)
+                else:
+                    # Apply normal styling
+                    field_widget.setStyleSheet("""
+                        QLineEdit {
+                            border: 1px solid #cccccc;
+                            border-radius: 4px;
+                            padding: 4px;
+                            background-color: #ffffff;
+                        }
+                        QLineEdit:focus {
+                            border: 2px solid #1976d2;
+                            background-color: #ffffff;
+                        }
+                    """)
+
+    def get_validation_errors(self) -> Dict[str, str]:
+        """
+        Get current validation errors.
+
+        Returns:
+            Dictionary of field names to error messages
+        """
+        form_data = self.get_form_data()
+        self.validation_service.set_risk_method("futures")
+        return self.validation_service.validate_form(form_data)
+
+    def is_form_valid(self) -> bool:
+        """
+        Check if the current form is valid.
+
+        Returns:
+            True if form is valid, False otherwise
+        """
+        form_data = self.get_form_data()
+        self.validation_service.set_risk_method("futures")
+        return self.validation_service.is_form_valid(form_data)
+
+    def get_required_fields(self) -> List[str]:
+        """
+        Get list of required fields for futures trading.
+
+        Returns:
+            List of required field names
+        """
+        return self.validation_service.get_required_fields("futures")
+
+    def validate_field(self, field_name: str, field_value: str) -> Optional[str]:
+        """
+        Validate a specific field.
+
+        Args:
+            field_name: Name of the field to validate
+            field_value: Value to validate
+
+        Returns:
+            Error message if invalid, None if valid
+        """
+        return self.validation_service.validate_field(field_name, field_value)

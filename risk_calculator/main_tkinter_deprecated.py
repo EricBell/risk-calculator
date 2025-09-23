@@ -1,4 +1,19 @@
-"""Main application entry point with cross-platform Tkinter setup."""
+"""
+DEPRECATED: Tkinter version of Risk Calculator
+
+⚠️ WARNING: This Tkinter-based version is DEPRECATED and will be removed in a future release.
+
+Please use the Qt-based version instead:
+    python -m risk_calculator.qt_main
+
+The Qt version provides:
+- Better cross-platform support
+- High-DPI display compatibility
+- Enhanced user interface
+- Improved performance and reliability
+
+For installation and usage instructions, see README.md
+"""
 
 import sys
 import os
@@ -6,6 +21,7 @@ import tkinter as tk
 from tkinter import messagebox
 import logging
 from pathlib import Path
+import warnings
 
 # Add the risk_calculator package to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -212,6 +228,23 @@ def run_application() -> None:
 def main() -> int:
     """Main entry point."""
     try:
+        # Show deprecation warning
+        warnings.warn(
+            "The Tkinter version of Risk Calculator is DEPRECATED. "
+            "Please use 'python -m risk_calculator.qt_main' instead. "
+            "See README.md for Qt installation instructions.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
+        print("\n" + "="*60)
+        print("⚠️  DEPRECATION WARNING")
+        print("="*60)
+        print("This Tkinter version is DEPRECATED and will be removed.")
+        print("Please use the Qt version instead:")
+        print("    python -m risk_calculator.qt_main")
+        print("="*60 + "\n")
+
         # Check Python version compatibility
         if not check_python_version():
             return 1

@@ -7,7 +7,8 @@ setup(
     packages=find_packages(),
     python_requires=">=3.12",
     install_requires=[
-        # No external dependencies - using Python standard library only
+        "PySide6>=6.5.0",  # Qt6 framework for Python
+        "psutil>=5.9.0",   # Performance monitoring
     ],
     extras_require={
         "dev": [
@@ -17,7 +18,8 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "risk-calculator=risk_calculator.main:main",
+            "risk-calculator=risk_calculator.qt_main:main",
+            "risk-calculator-tkinter=risk_calculator.main_tkinter_deprecated:main",  # Deprecated
         ],
     },
 )

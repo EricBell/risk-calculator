@@ -9,6 +9,7 @@ from ..models.risk_method import RiskMethod
 from ..services.risk_calculator import RiskCalculationService
 from ..services.validators import TradeValidationService
 from ..services.realtime_validator import RealTimeValidationService
+from ..services.button_state_service import ButtonStateService
 from ..views.qt_futures_tab import QtFuturesTab
 
 
@@ -28,6 +29,7 @@ class QtFuturesController(QtBaseController):
         self.risk_calculator = risk_calculator or RiskCalculationService()
         self.trade_validator = trade_validator or TradeValidationService()
         self.realtime_validator = RealTimeValidationService(self.trade_validator)
+        self.button_service = ButtonStateService()
 
         # Initialize trade object
         self.trade = FutureTrade()
@@ -43,6 +45,9 @@ class QtFuturesController(QtBaseController):
         # Connect direction change signal if available
         if hasattr(self.view, 'direction_changed'):
             self.view.direction_changed.connect(self._on_direction_changed)
+
+        # Setup button state management
+        self._setup_button_state_management()
 
     def get_required_fields(self) -> List[str]:
         """Return list of required fields based on current risk method."""
@@ -396,3 +401,89 @@ class QtFuturesController(QtBaseController):
             'calculated_at': self.calculation_result.get('timestamp'),
             'warnings': self.calculation_result.get('warnings', [])
         }
+
+    def _setup_button_state_management(self) -> None:
+        """Setup button state management for the futures tab."""
+        # Register button with the service
+        button_id = "futures_calculate_button"
+
+        # Register callback for button state changes
+        def on_button_state_change(state, reason):
+            """Handle button state changes."""
+            if hasattr(self.view, 'calculate_button'):
+                self.view.calculate_button.setEnabled(state.value == "enabled")
+                tooltip = self.button_service.get_button_tooltip(
+                    self.get_current_trade_data(),
+                    "futures"  # Futures use special method
+                )
+                self.view.calculate_button.setToolTip(tooltip or "")
+
+        self.button_service.register_button_callback(button_id, on_button_state_change)
+
+        # Connect field changes to button state updates
+        if hasattr(self.view, 'input_fields'):
+            for field_name, field_widget in self.view.input_fields.items():
+                if hasattr(field_widget, 'textChanged'):
+                    field_widget.textChanged.connect(self._update_button_state)
+
+        # Connect risk method changes to button state updates
+        if hasattr(self.view, 'risk_method_combo'):
+            self.view.risk_method_combo.currentIndexChanged.connect(self._update_button_state)
+
+        # Perform initial button state update
+        self._update_button_state()
+
+    def _update_button_state(self) -> None:
+        """Update button state based on current form data."""
+        try:
+            form_data = self.get_current_trade_data()
+            risk_method = "futures"  # Futures always use futures method
+            button_id = "futures_calculate_button"
+
+            # Update button state through service
+            self.button_service.update_button_model(button_id, form_data, risk_method)
+
+        except Exception as e:
+            # Silently handle errors to prevent UI crashes
+            print(f"Error updating button state in futures controller: {e}")
+
+    def get_current_trade_data(self) -> Dict[str, Any]:
+        """
+        Get current form data for validation and button state management.
+
+        Returns:
+            Dictionary with current form data
+        """
+        if hasattr(self.view, 'get_form_data'):
+            return self.view.get_form_data()
+        else:
+            # Fallback if view doesn't have get_form_data method
+            return {
+                'account_size': '',
+                'contract_symbol': '',
+                'entry_price': '',
+                'tick_value': '',
+                'tick_size': '',
+                'margin_requirement': '',
+                'risk_method': 'futures'
+            }
+
+    def validate_current_form(self) -> bool:
+        """
+        Validate the current form state.
+
+        Returns:
+            True if form is valid, False otherwise
+        """
+        if hasattr(self.view, 'is_form_valid'):
+            return self.view.is_form_valid()
+        else:
+            # Fallback validation
+            form_data = self.get_current_trade_data()
+            required_fields = self.get_required_fields()
+
+            for field in required_fields:
+                if not form_data.get(field, '').strip():
+                    return False
+
+            return True
