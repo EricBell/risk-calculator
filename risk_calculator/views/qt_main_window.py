@@ -61,6 +61,7 @@ class QtMainWindow(QMainWindow):
         self.setup_window_properties()
         self.setup_menu_bar()
         self.setup_tab_widget()
+        self.setup_trading_tabs()
         self.setup_status_bar()
         self.restore_window_state()
 
@@ -151,6 +152,40 @@ class QtMainWindow(QMainWindow):
 
         # Set as central widget
         self.setCentralWidget(self.tab_widget)
+
+    def setup_trading_tabs(self) -> None:
+        """Create and add all trading tabs."""
+        try:
+            # Import tab classes
+            from .qt_equity_tab import QtEquityTab
+            from .qt_options_tab import QtOptionsTab
+            from .qt_futures_tab import QtFuturesTab
+
+            # Create and add tabs
+            equity_tab = QtEquityTab()
+            equity_tab.setup_ui()
+            self.add_trading_tab("Equity", equity_tab)
+
+            options_tab = QtOptionsTab()
+            options_tab.setup_ui()
+            self.add_trading_tab("Options", options_tab)
+
+            futures_tab = QtFuturesTab()
+            futures_tab.setup_ui()
+            self.add_trading_tab("Futures", futures_tab)
+
+        except Exception as e:
+            # Fallback: add a placeholder tab
+            placeholder = QWidget()
+            placeholder_layout = QVBoxLayout(placeholder)
+            error_label = QWidget()
+            try:
+                from PySide6.QtWidgets import QLabel
+                error_label = QLabel(f"Error loading tabs: {e}")
+            except ImportError:
+                pass
+            placeholder_layout.addWidget(error_label)
+            self.add_trading_tab("Error", placeholder)
 
     def setup_status_bar(self) -> None:
         """Setup status bar."""
@@ -480,3 +515,28 @@ class QtMainWindow(QMainWindow):
     def close_application(self) -> None:
         """Close the application"""
         QApplication.quit()
+
+    def setup_ui(self) -> None:
+        """Setup UI components (already called in __init__)."""
+        # This method exists for interface compatibility
+        # Actual UI setup is done in __init__ via individual setup methods
+        pass
+
+    def center_on_screen(self) -> None:
+        """Center the window on the screen."""
+        try:
+            from PySide6.QtGui import QScreen
+            screen = QApplication.primaryScreen()
+            if screen:
+                screen_geometry = screen.geometry()
+                window_geometry = self.geometry()
+
+                # Calculate center position
+                x = (screen_geometry.width() - window_geometry.width()) // 2
+                y = (screen_geometry.height() - window_geometry.height()) // 2
+
+                # Move window to center
+                self.move(x, y)
+        except Exception:
+            # Fallback - move to a reasonable position
+            self.move(100, 100)

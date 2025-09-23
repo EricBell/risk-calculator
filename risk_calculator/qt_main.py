@@ -63,10 +63,17 @@ class RiskCalculatorQtApp:
     def create_main_window(self):
         """Create and configure the main window."""
         # Import here to avoid circular imports
-        from risk_calculator.views.qt_main_window import QtMainWindow
+        from risk_calculator.controllers.qt_main_controller import QtMainController
 
         if self.main_window is None:
-            self.main_window = QtMainWindow()
+            # Create controller and let it create the main window
+            self.controller = QtMainController()
+
+            # Initialize the full application through the controller
+            if self.controller.initialize_application():
+                self.main_window = self.controller.main_window
+            else:
+                raise RuntimeError("Failed to initialize Qt application")
 
         return self.main_window
 
@@ -76,9 +83,8 @@ class RiskCalculatorQtApp:
             # Create application
             app = self.create_application()
 
-            # Create and show main window
+            # Create main window (controller handles showing it)
             main_window = self.create_main_window()
-            main_window.show()
 
             # Center window on screen
             main_window.center_on_screen()
