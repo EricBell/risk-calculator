@@ -46,7 +46,11 @@ class TestExitPerformance:
     def test_basic_application_exit_performance(self):
         """Test basic application exit completes in <2s."""
         qt_app = self.RiskCalculatorQtApp()
-        qt_app.create_application()
+        # Use existing QApplication if available, otherwise create new one
+        if QApplication.instance():
+            qt_app.app = QApplication.instance()
+        else:
+            qt_app.create_application()
 
         controller = self.QtMainController()
         controller.initialize_application()
@@ -66,7 +70,11 @@ class TestExitPerformance:
     def test_application_exit_with_data_cleanup(self):
         """Test application exit performance with data cleanup."""
         qt_app = self.RiskCalculatorQtApp()
-        qt_app.create_application()
+        # Use existing QApplication if available, otherwise create new one
+        if QApplication.instance():
+            qt_app.app = QApplication.instance()
+        else:
+            qt_app.create_application()
 
         controller = self.QtMainController()
         controller.initialize_application()
@@ -129,7 +137,11 @@ class TestExitPerformance:
     def test_window_state_persistence_during_exit(self):
         """Test exit performance when saving window state."""
         qt_app = self.RiskCalculatorQtApp()
-        qt_app.create_application()
+        # Use existing QApplication if available, otherwise create new one
+        if QApplication.instance():
+            qt_app.app = QApplication.instance()
+        else:
+            qt_app.create_application()
 
         controller = self.QtMainController()
         controller.initialize_application()
@@ -276,7 +288,11 @@ class TestExitPerformance:
 
         # Create application with significant memory usage
         qt_app = self.RiskCalculatorQtApp()
-        qt_app.create_application()
+        # Use existing QApplication if available, otherwise create new one
+        if QApplication.instance():
+            qt_app.app = QApplication.instance()
+        else:
+            qt_app.create_application()
 
         controller = self.QtMainController()
         controller.initialize_application()
@@ -314,7 +330,11 @@ class TestExitPerformance:
     def test_qt_widget_cleanup_performance(self):
         """Test Qt widget cleanup performance during exit."""
         qt_app = self.RiskCalculatorQtApp()
-        qt_app.create_application()
+        # Use existing QApplication if available, otherwise create new one
+        if QApplication.instance():
+            qt_app.app = QApplication.instance()
+        else:
+            qt_app.create_application()
 
         controller = self.QtMainController()
         controller.initialize_application()
@@ -347,7 +367,11 @@ class TestExitPerformance:
     def test_configuration_save_performance_during_exit(self):
         """Test configuration saving performance during application exit."""
         qt_app = self.RiskCalculatorQtApp()
-        qt_app.create_application()
+        # Use existing QApplication if available, otherwise create new one
+        if QApplication.instance():
+            qt_app.app = QApplication.instance()
+        else:
+            qt_app.create_application()
 
         controller = self.QtMainController()
         controller.initialize_application()
@@ -431,6 +455,10 @@ class TestExitPerformance:
         # Run multiple exit cycles to get statistical data
         for iteration in range(5):
             qt_app = self.RiskCalculatorQtApp()
+            # Use existing QApplication if available, otherwise create new one
+        if QApplication.instance():
+            qt_app.app = QApplication.instance()
+        else:
             qt_app.create_application()
 
             controller = self.QtMainController()
@@ -522,7 +550,11 @@ class TestExitPerformance:
     def test_exit_performance_with_unsaved_data_detection(self):
         """Test exit performance when checking for unsaved data."""
         qt_app = self.RiskCalculatorQtApp()
-        qt_app.create_application()
+        # Use existing QApplication if available, otherwise create new one
+        if QApplication.instance():
+            qt_app.app = QApplication.instance()
+        else:
+            qt_app.create_application()
 
         controller = self.QtMainController()
         controller.initialize_application()
@@ -575,7 +607,11 @@ class TestExitPerformance:
         try:
             # Test exit performance under load
             qt_app = self.RiskCalculatorQtApp()
-            qt_app.create_application()
+            # Use existing QApplication if available, otherwise create new one
+            if QApplication.instance():
+                qt_app.app = QApplication.instance()
+            else:
+                qt_app.create_application()
 
             controller = self.QtMainController()
             controller.initialize_application()
