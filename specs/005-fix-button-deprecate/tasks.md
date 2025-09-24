@@ -112,6 +112,28 @@
 - [x] T049 Performance tests for application exit time (<2s) in tests/performance/test_exit_performance.py
 - [x] T050 Cross-platform validation on Windows and Linux following quickstart.md scenarios
 
+## Phase 3.11: Options Trading Enhancements 🔄 NEW PHASE
+**NEW REQUIREMENTS**: Level-based risk method and stop loss price for options (from updated spec)
+
+- [ ] T051 [P] Contract test OptionsLevelBasedInterface in tests/contract/test_options_level_based_interface.py
+- [ ] T052 [P] Contract test OptionsStopLossInterface in tests/contract/test_options_stop_loss_interface.py
+- [ ] T053 [P] Integration test options level-based risk calculation in tests/integration/test_options_level_based_risk.py
+- [ ] T054 [P] Integration test options stop loss price functionality in tests/integration/test_options_stop_loss_price.py
+- [ ] T055 [P] Integration test all three risk methods for options parity in tests/integration/test_options_risk_method_parity.py
+- [ ] T056 Extend OptionTrade model with level-based fields in risk_calculator/models/option_trade.py
+- [ ] T057 Add stop loss price field to OptionTrade model in risk_calculator/models/option_trade.py
+- [ ] T058 Implement level-based risk calculation for options in risk_calculator/services/risk_calculator.py
+- [ ] T059 Add stop loss price validation for options in risk_calculator/services/enhanced_form_validation_service.py
+- [ ] T060 Update QtOptionsTab UI with level-based method support in risk_calculator/views/qt_options_tab.py
+- [ ] T061 Add stop loss price field to options UI in risk_calculator/views/qt_options_tab.py
+- [ ] T062 Implement level-based method in QtOptionsController in risk_calculator/controllers/qt_options_controller.py
+- [ ] T063 Add stop loss price handling to QtOptionsController in risk_calculator/controllers/qt_options_controller.py
+- [ ] T064 Update options button state validation for new fields in risk_calculator/services/button_state_service.py
+- [ ] T065 [P] Unit tests for options level-based calculations in tests/unit/test_options_level_based.py
+- [ ] T066 [P] Unit tests for options stop loss functionality in tests/unit/test_options_stop_loss.py
+- [ ] T067 [P] Performance tests for options enhanced calculations in tests/performance/test_options_enhanced_performance.py
+- [ ] T068 Cross-platform validation of options enhancements following updated spec scenarios
+
 ## Dependencies
 - Tkinter deprecation (T001-T004) can run independently
 - Tests (T005-T015) before implementation (T016-T043)
@@ -122,6 +144,7 @@
 - Core functionality before error display (T037-T040)
 - Implementation before performance optimization (T041-T043)
 - Everything before polish (T044-T050)
+- **Options Enhancements (T051-T068)**: Tests (T051-T055) before models (T056-T057), models before services (T058-T059), services before UI (T060-T061), UI before controllers (T062-T063), then validation/testing (T064-T068)
 
 ## Parallel Example for Phase 3.2 (TDD Tests)
 ```bash
@@ -153,6 +176,21 @@ Task: "ApplicationProcessState model in risk_calculator/models/application_proce
 Task: "Enhanced form validation service in risk_calculator/services/enhanced_form_validation_service.py"
 Task: "Button state management service in risk_calculator/services/button_state_service.py"
 Task: "Application lifecycle management service in risk_calculator/services/application_lifecycle_service.py"
+```
+
+## Parallel Example for Phase 3.11 (Options Enhancements Tests)
+```bash
+# Launch T051-T055 together (Options Enhancement Tests):
+Task: "Contract test OptionsLevelBasedInterface in tests/contract/test_options_level_based_interface.py"
+Task: "Contract test OptionsStopLossInterface in tests/contract/test_options_stop_loss_interface.py"
+Task: "Integration test options level-based risk calculation in tests/integration/test_options_level_based_risk.py"
+Task: "Integration test options stop loss price functionality in tests/integration/test_options_stop_loss_price.py"
+Task: "Integration test all three risk methods for options parity in tests/integration/test_options_risk_method_parity.py"
+
+# Launch T065-T067 together (Options Unit/Performance Tests):
+Task: "Unit tests for options level-based calculations in tests/unit/test_options_level_based.py"
+Task: "Unit tests for options stop loss functionality in tests/unit/test_options_stop_loss.py"
+Task: "Performance tests for options enhanced calculations in tests/performance/test_options_enhanced_performance.py"
 ```
 
 ## Notes
@@ -210,16 +248,16 @@ Task: "Application lifecycle management service in risk_calculator/services/appl
 - **Performance Standards**: <50ms validation, <2s exit time (T048-T049)
 
 ## File Impact Summary
-**Modified Files**: 12+ Qt view and controller files
-**New Files**: 19+ model, service, and test files
+**Modified Files**: 15+ Qt view, controller, model, and service files (increased for options enhancements)
+**New Files**: 24+ model, service, and test files (additional options enhancement tests)
 **Deprecated Files**: 1 main Tkinter entry point
-**Risk Level**: Medium (button enablement logic is critical UX)
-**Test Coverage**: 100% of button enablement and deprecation scenarios
+**Risk Level**: Medium (button enablement and options trading logic are critical UX)
+**Test Coverage**: 100% of button enablement, deprecation, and options enhancement scenarios
 
-## Implementation Summary ✅ ALL TASKS COMPLETED
+## Implementation Summary 🔄 UPDATED WITH OPTIONS ENHANCEMENTS
 
-**Total Tasks**: 50 (T001-T050)
-**Completion Status**: 50/50 tasks successfully implemented (100%)
+**Total Tasks**: 68 (T001-T068) ← INCREASED FROM 50
+**Completion Status**: 50/68 tasks completed (73.5%) | 18 new options enhancement tasks pending
 
 **Phase Completion Summary**:
 - ✅ Phase 3.1: Tkinter Deprecation Setup (T001-T004) - 4/4 tasks
@@ -232,6 +270,7 @@ Task: "Application lifecycle management service in risk_calculator/services/appl
 - ✅ Phase 3.8: Error Display Enhancement (T037-T040) - 4/4 tasks
 - ✅ Phase 3.9: Performance Optimization (T041-T043) - 3/3 tasks
 - ✅ Phase 3.10: Polish and Validation (T044-T050) - 7/7 tasks
+- 🔄 **Phase 3.11: Options Trading Enhancements (T051-T068) - 0/18 tasks ← NEW PHASE**
 
 **Key Achievements**:
 - Complete Tkinter deprecation with Qt migration
@@ -240,13 +279,17 @@ Task: "Application lifecycle management service in risk_calculator/services/appl
 - Performance optimizations for responsive UI
 - Comprehensive test coverage across all functionality
 - Cross-platform validation on Windows and Linux
+- 🔄 **PENDING**: Options trading enhancements (level-based risk + stop loss price)
 
-**Critical Success Criteria Met**:
+**Critical Success Criteria Status**:
 - ✅ Tkinter Completely Deprecated: No user can access Tkinter version
 - ✅ Real-time Button Validation: Button enables immediately when form complete
 - ✅ Clear Error Messages: User knows exactly why button disabled
 - ✅ Process Cleanup: Complete termination on exit
 - ✅ Cross-Platform Consistency: Identical behavior on Windows and Linux
 - ✅ Performance Standards: <50ms validation, <2s exit time
+- 🔄 **PENDING**: Options Level-Based Risk Method: Support/resistance levels for options
+- 🔄 **PENDING**: Options Stop Loss Price: Entry/stop loss functionality like equities
+- 🔄 **PENDING**: Options Risk Method Parity: All three methods available for options
 
-**Production Ready**: Qt application with enhanced validation, button management, and Tkinter deprecation fully implemented.
+**Current Status**: Core Qt application complete. Options enhancements in Phase 3.11 needed for full spec compliance.

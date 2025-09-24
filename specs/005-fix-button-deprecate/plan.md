@@ -31,7 +31,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Refine the existing Qt-based risk calculator application by completely deprecating the Tkinter version, implementing intelligent Calculate Position button enablement with real-time validation feedback, and ensuring proper application lifecycle management. Primary requirements include removing Tkinter access, adding comprehensive form validation with clear error messaging, and implementing complete process termination on application exit.
+Refine the existing Qt-based risk calculator application by completely deprecating the Tkinter version, implementing intelligent Calculate Position button enablement with real-time validation feedback, enhancing options trading with level-based risk calculations and stop loss price functionality (bringing options to parity with equities), and ensuring proper application lifecycle management. Primary requirements include removing Tkinter access, adding comprehensive form validation with clear error messaging, implementing all three risk methods for options trading, and implementing complete process termination on application exit.
 
 ## Technical Context
 **Language/Version**: Python 3.12+ (preserving existing codebase compatibility)
@@ -42,7 +42,7 @@ Refine the existing Qt-based risk calculator application by completely deprecati
 **Project Type**: single (desktop application)
 **Performance Goals**: <100ms UI response time, real-time validation feedback, <3s startup
 **Constraints**: <100MB memory usage, offline-capable, no server dependencies, complete process cleanup
-**Scale/Scope**: Single-user desktop application, existing codebase refinement, 3 trading asset types
+**Scale/Scope**: Single-user desktop application, existing codebase refinement, 3 trading asset types with enhanced options functionality
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -189,6 +189,9 @@ ios/ or android/
 - Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
 - Button validation interface contracts → contract test tasks [P]
 - Form/Button validation entities → model implementation tasks [P]
+- Options enhancement contracts → options UI and calculation tasks
+- Level-based risk method → options controller and validation tasks
+- Stop loss price functionality → options model and service tasks
 - Tkinter deprecation → entry point modification tasks
 - Application lifecycle → process management tasks
 - Quickstart scenarios → integration test tasks
@@ -197,6 +200,8 @@ ios/ or android/
 - TDD order: Contract tests before implementation
 - Dependency order: Models before services before controllers before UI
 - Tkinter deprecation can run parallel with validation work [P]
+- Options enhancements can run parallel with button validation work [P]
+- Level-based and stop loss functionality sequential within options (model → service → controller → UI)
 - Process management tasks sequential due to Qt application lifecycle dependencies
 - Mark [P] for parallel execution (independent files/features)
 
@@ -204,10 +209,12 @@ ios/ or android/
 1. **Tkinter Deprecation**: Entry point modification, deprecation warnings
 2. **Real-time Validation**: Signal/slot connections, validation service integration
 3. **Button State Management**: Qt widget state updates, tooltip management
-4. **Process Lifecycle**: Qt application cleanup, resource management
-5. **Cross-Tab Consistency**: Equity, Options, Futures validation uniformity
+4. **Options Enhancements**: Level-based risk method implementation, stop loss price field addition
+5. **Risk Method Parity**: Ensure all three risk methods work across all asset types
+6. **Process Lifecycle**: Qt application cleanup, resource management
+7. **Cross-Tab Consistency**: Equity, Options, Futures validation uniformity with enhanced options
 
-**Estimated Output**: 20-25 numbered, ordered tasks in tasks.md
+**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md (increased due to options enhancements)
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
