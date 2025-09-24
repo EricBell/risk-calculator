@@ -139,10 +139,10 @@ class EnhancedFormValidationService(FormValidationInterface):
         # Convert value to string and strip whitespace
         value_str = str(field_value).strip() if field_value is not None else ""
 
-        # Get field rules
+        # Get field rules - return None for unknown fields instead of error
         rules = self._field_rules.get(field_name)
         if not rules:
-            return f"Unknown field: {field_name}"
+            return None  # Ignore unknown fields
 
         # Check if field is required and empty
         if rules.get('required', False) and not value_str:
@@ -192,17 +192,18 @@ class EnhancedFormValidationService(FormValidationInterface):
         # Get required fields for current risk method
         required_fields = self.get_required_fields(self._current_risk_method)
 
-        # Validate each field
-        for field_name, value in form_data.items():
-            error = self.validate_field(field_name, value)
-            if error:
-                errors[field_name] = error
-
-        # Check for missing required fields
+        # Only validate required fields for current risk method
         for required_field in required_fields:
-            if required_field not in form_data or not str(form_data[required_field]).strip():
-                if required_field not in errors:
-                    errors[required_field] = f"{self._format_field_name(required_field)} is required"
+            field_value = form_data.get(required_field)
+
+            # Check if required field is missing or empty
+            if not field_value or not str(field_value).strip():
+                errors[required_field] = f"{self._format_field_name(required_field)} is required"
+            else:
+                # Validate the field value
+                error = self.validate_field(required_field, field_value)
+                if error:
+                    errors[required_field] = error
 
         # Cross-field validation
         cross_field_errors = self._validate_cross_field_constraints(form_data)
