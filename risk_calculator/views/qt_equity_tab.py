@@ -59,6 +59,11 @@ class QtEquityTab(QtBaseView):
         self.validation_timer.timeout.connect(self._perform_validation)
         self.validation_delay_ms = 300  # 300ms debounce
 
+        # Button state caching for performance
+        self._cached_button_enabled = None
+        self._cached_button_tooltip = None
+        self._cached_form_hash = None
+
     def setup_ui(self) -> None:
         """Setup the equity tab UI components."""
         main_layout = self.create_main_layout()
@@ -592,12 +597,24 @@ class QtEquityTab(QtBaseView):
 
     def _update_button_state(self, form_data: Dict[str, Any], risk_method: str) -> None:
         """
-        Update calculate button state.
+        Update calculate button state with caching for performance.
 
         Args:
             form_data: Current form data
             risk_method: Current risk method
         """
+        # Create form hash for caching
+        form_hash = hash((
+            frozenset(form_data.items()) if form_data else frozenset(),
+            risk_method
+        ))
+
+        # Check cache to avoid unnecessary updates
+        if (form_hash == self._cached_form_hash and
+            self._cached_button_enabled is not None and
+            self._cached_button_tooltip is not None):
+            return
+
         button_id = "equity_calculate_button"
 
         # Update button model in button service
@@ -607,10 +624,20 @@ class QtEquityTab(QtBaseView):
         should_enable = self.button_service.should_enable_button(form_data, risk_method)
         tooltip = self.button_service.get_button_tooltip(form_data, risk_method)
 
-        # Update calculate button if it exists
+        # Update cache
+        self._cached_form_hash = form_hash
+        self._cached_button_enabled = should_enable
+        self._cached_button_tooltip = tooltip
+
+        # Update UI only if state changed
         if hasattr(self, 'calculate_button') and self.calculate_button:
-            self.calculate_button.setEnabled(should_enable)
-            self.calculate_button.setToolTip(tooltip or "")
+            if self.calculate_button.isEnabled() != should_enable:
+                self.calculate_button.setEnabled(should_enable)
+
+            current_tooltip = self.calculate_button.toolTip()
+            new_tooltip = tooltip or ""
+            if current_tooltip != new_tooltip:
+                self.calculate_button.setToolTip(new_tooltip)
 
     def _update_field_styling(self, errors: Dict[str, str]) -> None:
         """
@@ -635,6 +662,8 @@ class QtEquityTab(QtBaseView):
                             background-color: #ffffff;
                         }
                     """)
+                    # Set error tooltip
+                    field_widget.setToolTip(f"Error: {errors[field_name]}")
                 else:
                     # Apply normal styling
                     field_widget.setStyleSheet("""
@@ -649,6 +678,8 @@ class QtEquityTab(QtBaseView):
                             background-color: #ffffff;
                         }
                     """)
+                    # Clear error tooltip
+                    field_widget.setToolTip("")
 
     def get_validation_errors(self) -> Dict[str, str]:
         """

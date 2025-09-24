@@ -17,6 +17,7 @@ except ImportError:
 from ..services.qt_window_manager import QtWindowManagerService
 from ..services.qt_display_service import QtDisplayService
 from ..services.qt_config_service import QtConfigurationService
+from ..services.application_lifecycle_service import ApplicationLifecycleService
 from ..models.window_configuration import WindowConfiguration
 from .qt_base_view import QtBaseView
 
@@ -45,6 +46,7 @@ class QtMainWindow(QMainWindow):
         self.window_manager = QtWindowManagerService()
         self.display_service = QtDisplayService()
         self.config_service = QtConfigurationService()
+        self.lifecycle_service = ApplicationLifecycleService()
 
         # UI Components
         self.tab_widget: Optional[QTabWidget] = None
@@ -69,6 +71,9 @@ class QtMainWindow(QMainWindow):
         self.resize_timer = QTimer()
         self.resize_timer.timeout.connect(self._handle_resize_complete)
         self.resize_timer.setSingleShot(True)
+
+        # Register cleanup handlers
+        self.register_cleanup_handlers()
 
     def setup_window_properties(self) -> None:
         """Setup basic window properties."""
@@ -430,6 +435,61 @@ class QtMainWindow(QMainWindow):
         # Debounce resize handling to avoid excessive saves
         self.resize_timer.start(500)  # 500ms delay
 
+    def register_cleanup_handlers(self) -> None:
+        """Register cleanup handlers with the lifecycle service."""
+        # Register main window cleanup
+        self.lifecycle_service.register_cleanup_handler(
+            'main_window_cleanup', self._cleanup_main_window
+        )
+
+        # Register tab cleanup
+        self.lifecycle_service.register_cleanup_handler(
+            'tabs_cleanup', self._cleanup_tabs
+        )
+
+        # Register window state cleanup
+        self.lifecycle_service.register_cleanup_handler(
+            'window_state_cleanup', self._cleanup_window_state
+        )
+
+    def _cleanup_main_window(self) -> None:
+        """Cleanup main window resources."""
+        try:
+            # Stop any running timers
+            if hasattr(self, 'resize_timer') and self.resize_timer:
+                self.resize_timer.stop()
+
+            # Close all dialogs
+            for child in self.findChildren(QWidget):
+                if child.isWindow() and child != self:
+                    child.close()
+
+        except Exception as e:
+            print(f"Error during main window cleanup: {e}")
+
+    def _cleanup_tabs(self) -> None:
+        """Cleanup tab widgets and save form data."""
+        try:
+            # Save form data from all tabs
+            for tab_name, tab_widget in self.tabs.items():
+                if hasattr(tab_widget, 'get_form_data'):
+                    form_data = tab_widget.get_form_data()
+                    self.config_service.save_form_data(tab_name, form_data)
+
+                # Clear validation timers in tabs
+                if hasattr(tab_widget, 'validation_timer'):
+                    tab_widget.validation_timer.stop()
+
+        except Exception as e:
+            print(f"Error during tabs cleanup: {e}")
+
+    def _cleanup_window_state(self) -> None:
+        """Cleanup and save window state."""
+        try:
+            self.save_window_state()
+        except Exception as e:
+            print(f"Error saving window state during cleanup: {e}")
+
     def closeEvent(self, event: QCloseEvent) -> None:
         """
         Handle window close event.
@@ -437,17 +497,17 @@ class QtMainWindow(QMainWindow):
         Args:
             event: Close event
         """
-        # Save window state before closing
-        self.save_window_state()
+        try:
+            # Trigger lifecycle cleanup
+            self.lifecycle_service.cleanup()
 
-        # Save any form data in tabs
-        for tab_name, tab_widget in self.tabs.items():
-            if hasattr(tab_widget, 'get_form_data'):
-                form_data = tab_widget.get_form_data()
-                self.config_service.save_form_data(tab_name, form_data)
+            # Accept the close event
+            event.accept()
 
-        # Accept the close event
-        event.accept()
+        except Exception as e:
+            print(f"Error during window close: {e}")
+            # Force accept the event to ensure window closes
+            event.accept()
 
     def _handle_resize_complete(self) -> None:
         """Handle completion of window resize (debounced)."""
