@@ -338,6 +338,7 @@ class ButtonStateService:
             'level': 'Level',
             'entry_price': 'Entry Price',
             'stop_loss_price': 'Stop Loss Price',
+            'premium': 'Option Premium',
             'option_premium': 'Option Premium',
             'tick_value': 'Tick Value',
             'ticks_at_risk': 'Ticks at Risk'

@@ -7,14 +7,9 @@ import pytest
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, Callable
 from unittest.mock import Mock
-from enum import Enum
 
-
-class ButtonState(Enum):
-    """Button state enumeration."""
-    ENABLED = "enabled"
-    DISABLED = "disabled"
-    LOADING = "loading"
+# Import the actual enum from the implementation
+from risk_calculator.models.button_state import ButtonState
 
 
 class ButtonStateInterface(ABC):

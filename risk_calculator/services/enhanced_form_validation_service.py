@@ -103,12 +103,26 @@ class EnhancedFormValidationService(FormValidationInterface):
                 'max_value': 1000000,
                 'decimal_places': 4
             },
+            'premium': {
+                'required': True,
+                'type': 'positive_numeric',
+                'min_value': 0.01,
+                'max_value': 10000,
+                'decimal_places': 4
+            },
             'option_premium': {
                 'required': True,
                 'type': 'positive_numeric',
                 'min_value': 0.01,
                 'max_value': 10000,
                 'decimal_places': 4
+            },
+            'contract_multiplier': {
+                'required': True,
+                'type': 'positive_numeric',
+                'min_value': 1,
+                'max_value': 10000,
+                'decimal_places': 0
             },
             'tick_value': {
                 'required': True,
@@ -247,7 +261,7 @@ class EnhancedFormValidationService(FormValidationInterface):
         elif risk_method == 'level':
             required_fields = base_fields + ['level', 'entry_price', 'stop_loss_price']
         elif risk_method == 'options':
-            required_fields = base_fields + ['fixed_risk_amount', 'option_premium']
+            required_fields = base_fields + ['premium', 'contract_multiplier']
         elif risk_method == 'futures':
             required_fields = base_fields + ['fixed_risk_amount', 'tick_value', 'ticks_at_risk']
         else:

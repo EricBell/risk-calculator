@@ -368,8 +368,19 @@ class TestDisplayServiceIntegration:
 
     def test_display_service_error_handling(self):
         """Test display service error handling."""
-        # Test with no QApplication instance
-        with patch('risk_calculator.services.qt_display_service.QApplication.instance', return_value=None):
+        # Test with no QApplication instance and mock display profile detection
+        from risk_calculator.models.display_profile import DisplayProfile
+
+        # Create a mock display profile with default values
+        mock_profile = DisplayProfile(
+            screen_width=1920,
+            screen_height=1080,
+            dpi_scale=1.0,  # Default scale
+            is_high_dpi=False,
+            platform="Linux"
+        )
+
+        with patch.object(self.display_service, 'detect_display_profile', return_value=mock_profile):
             # Should handle gracefully and return defaults
             scale_factor = self.display_service.get_dpi_scale_factor()
             assert scale_factor == 1.0

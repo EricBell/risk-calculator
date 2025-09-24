@@ -25,7 +25,10 @@ class QtOptionsController(QtBaseController):
             risk_calculator: Risk calculation service (optional)
             trade_validator: Trade validation service (optional)
         """
-        # Initialize services
+        # Call parent constructor first
+        super().__init__(view)
+
+        # Initialize services AFTER parent constructor (dependency injection or default creation)
         self.risk_calculator = risk_calculator or RiskCalculationService()
         self.trade_validator = trade_validator or TradeValidationService()
         self.realtime_validator = RealTimeValidationService(self.trade_validator)
@@ -33,9 +36,6 @@ class QtOptionsController(QtBaseController):
 
         # Initialize trade object
         self.trade = OptionTrade()
-
-        # Call parent constructor
-        super().__init__(view)
 
         # Connect options-specific signals
         self._setup_options_connections()
@@ -146,11 +146,17 @@ class QtOptionsController(QtBaseController):
             calculation_result = self.risk_calculator.calculate_option_position(trade)
 
             if calculation_result.success:
+                # Calculate position value (position_size * premium * contract_multiplier)
+                try:
+                    position_value = float(calculation_result.position_size) * float(trade.premium) * float(trade.contract_multiplier)
+                except (ValueError, TypeError, AttributeError):
+                    position_value = 0.0
+
                 # Format result for view
                 return {
                     'position_size': calculation_result.position_size,
-                    'estimated_risk': calculation_result.estimated_risk,
-                    'position_value': calculation_result.position_value,
+                    'estimated_risk': float(calculation_result.estimated_risk),
+                    'position_value': position_value,
                     'risk_method': trade.risk_method.value,
                     'warnings': calculation_result.warnings,
                     'success': True
@@ -317,20 +323,18 @@ class QtOptionsController(QtBaseController):
         def on_button_state_change(state, reason):
             """Handle button state changes."""
             if hasattr(self.view, 'calculate_button'):
-                self.view.calculate_button.setEnabled(state.value == "enabled")
-                tooltip = self.button_service.get_button_tooltip(
-                    self.get_current_trade_data(),
-                    "options"  # Options use special method
-                )
+                enabled = (state.value == "enabled")
+                self.view.calculate_button.setEnabled(enabled)
+                form_data = self.get_current_trade_data()
+                risk_method = "options"  # Options use special validation
+                tooltip = self.button_service.get_button_tooltip(form_data, risk_method)
                 self.view.calculate_button.setToolTip(tooltip or "")
 
         self.button_service.register_button_callback(button_id, on_button_state_change)
 
-        # Connect field changes to button state updates
-        if hasattr(self.view, 'input_fields'):
-            for field_name, field_widget in self.view.input_fields.items():
-                if hasattr(field_widget, 'textChanged'):
-                    field_widget.textChanged.connect(self._update_button_state)
+        # Connect field changes from view to button state updates
+        if hasattr(self.view, 'field_changed'):
+            self.view.field_changed.connect(self._on_field_change_for_button_state)
 
         # Connect risk method changes to button state updates
         if hasattr(self.view, 'risk_method_combo'):
@@ -339,11 +343,22 @@ class QtOptionsController(QtBaseController):
         # Perform initial button state update
         self._update_button_state()
 
+    def _on_field_change_for_button_state(self, field_name: str, new_value: str) -> None:
+        """
+        Handle field change events for button state management.
+
+        Args:
+            field_name: Name of the field that changed
+            new_value: New value of the field
+        """
+        # Update button state when any field changes
+        self._update_button_state()
+
     def _update_button_state(self) -> None:
         """Update button state based on current form data."""
         try:
             form_data = self.get_current_trade_data()
-            risk_method = "options"  # Options always use options method
+            risk_method = "options"  # Options always use special validation
             button_id = "options_calculate_button"
 
             # Update button state through service
@@ -390,3 +405,19 @@ class QtOptionsController(QtBaseController):
                     return False
 
             return True
+
+    def _update_validation_status(self) -> None:
+        """
+        Override base controller validation status update to prevent button conflicts.
+        The QtOptionsController uses its own button state management system.
+        """
+        # Check if we have any field errors
+        had_errors = self.has_errors
+        self.has_errors = len(self.field_errors) > 0
+
+        # Emit validation change signal if status changed
+        if had_errors != self.has_errors:
+            self.validation_changed.emit(self.has_errors)
+
+        # Note: We do NOT call self.view.set_calculate_button_enabled() here
+        # because this controller uses the ButtonStateService for button management

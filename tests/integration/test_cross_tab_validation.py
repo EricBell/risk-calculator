@@ -45,6 +45,13 @@ class TestCrossTabValidation:
         if hasattr(self, 'main_window') and self.main_window:
             self.main_window.close()
 
+    def _set_field_value(self, field_widget, value):
+        """Helper method to set field value and emit proper signals."""
+        field_widget.setText(value)
+        # Emit textChanged signal to trigger button state updates
+        if hasattr(field_widget, 'textChanged'):
+            field_widget.textChanged.emit(value)
+
     def test_validation_consistency_across_tabs(self):
         """Test that validation rules are consistent across all tabs."""
         tabs = ['equity', 'options', 'futures']
@@ -124,10 +131,10 @@ class TestCrossTabValidation:
         # Fill equity tab with valid data
         equity_tab = self.main_window.tabs['equity']
         equity_tab.risk_method_combo.setCurrentText('Percentage')
-        equity_tab.account_size_entry.setText('10000')
-        equity_tab.risk_percentage_entry.setText('2')
-        equity_tab.entry_price_entry.setText('50.00')
-        equity_tab.stop_loss_price_entry.setText('48.00')
+        self._set_field_value(equity_tab.account_size_entry, '10000')
+        self._set_field_value(equity_tab.risk_percentage_entry, '2')
+        self._set_field_value(equity_tab.entry_price_entry, '50.00')
+        self._set_field_value(equity_tab.stop_loss_price_entry, '48.00')
 
         QApplication.processEvents()
         assert equity_tab.calculate_button.isEnabled(), "Equity tab button should be enabled with valid data"
@@ -193,7 +200,7 @@ class TestCrossTabValidation:
                 if field_name != 'risk_method':
                     field_widget = getattr(tab, f'{field_name}_entry', None)
                     if field_widget:
-                        field_widget.setText(value)
+                        self._set_field_value(field_widget, value)
 
         QApplication.processEvents()
 
