@@ -34,7 +34,8 @@ class QtFuturesTab(QtBaseView):
         Args:
             parent: Parent widget
         """
-        super().__init__(parent)
+        # Initialize attributes BEFORE calling super().__init__
+        # because setup_ui() is called in parent constructor
 
         # Risk method management (all methods for futures)
         self.current_method = RiskMethod.PERCENTAGE
@@ -53,12 +54,6 @@ class QtFuturesTab(QtBaseView):
         self.validation_service = EnhancedFormValidationService()
         self.button_service = ButtonStateService()
 
-        # Validation timer for debouncing
-        self.validation_timer = QTimer()
-        self.validation_timer.setSingleShot(True)
-        self.validation_timer.timeout.connect(self._perform_validation)
-        self.validation_delay_ms = 300  # 300ms debounce
-
         # Button state caching for performance
         self._cached_button_enabled = None
         self._cached_button_tooltip = None
@@ -66,6 +61,15 @@ class QtFuturesTab(QtBaseView):
 
         # Margin analysis display
         self.margin_display: Optional[QLabel] = None
+
+        # Call parent constructor (which calls setup_ui())
+        super().__init__(parent)
+
+        # Validation timer for debouncing (requires Qt app to be initialized)
+        self.validation_timer = QTimer()
+        self.validation_timer.setSingleShot(True)
+        self.validation_timer.timeout.connect(self._perform_validation)
+        self.validation_delay_ms = 300  # 300ms debounce
 
     def setup_ui(self) -> None:
         """Setup the futures tab UI components."""
