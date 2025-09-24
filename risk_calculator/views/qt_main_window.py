@@ -493,7 +493,7 @@ class QtMainWindow(QMainWindow):
         """
         try:
             # Trigger lifecycle cleanup
-            self.lifecycle_service.cleanup()
+            self.lifecycle_service.force_cleanup()
 
             # Accept the close event
             event.accept()

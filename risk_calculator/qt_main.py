@@ -111,7 +111,7 @@ class RiskCalculatorQtApp:
     def _on_about_to_quit(self):
         """Handle Qt aboutToQuit signal."""
         # Perform cleanup tasks
-        self.lifecycle_service.shutdown()
+        self.lifecycle_service.shutdown_application()
 
     def create_main_window(self):
         """Create and configure the main window."""

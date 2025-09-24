@@ -50,6 +50,9 @@ class QtOptionsTab(QtBaseView):
         # Result display
         self.result_display: Optional[QTextEdit] = None
 
+        # Input fields reference (will be set up after parent init)
+        self.input_fields: Dict[str, QLineEdit] = {}
+
         # Real-time validation services
         self.validation_service = EnhancedFormValidationService()
         self.button_service = ButtonStateService()
@@ -61,6 +64,9 @@ class QtOptionsTab(QtBaseView):
 
         # Call parent constructor (which calls setup_ui())
         super().__init__(parent)
+
+        # Set up input_fields reference to form_fields from base class
+        self.input_fields = self.form_fields
 
         # Validation timer for debouncing (requires Qt app to be initialized)
         self.validation_timer = QTimer()
@@ -101,6 +107,9 @@ class QtOptionsTab(QtBaseView):
 
         # Add stretch to push everything to top
         main_layout.addStretch()
+
+        # Create convenient field references for tests and controllers
+        self._setup_field_references()
 
     def _create_input_section(self) -> QGroupBox:
         """
@@ -314,6 +323,16 @@ class QtOptionsTab(QtBaseView):
         layout.addWidget(self.result_display)
 
         return group
+
+    def _setup_field_references(self) -> None:
+        """Setup convenient field references for tests and controllers."""
+        # Create direct references to form fields for easier access
+        self.account_size_entry = self.form_fields.get('account_size')
+        self.option_symbol_entry = self.form_fields.get('option_symbol')
+        self.premium_entry = self.form_fields.get('premium')
+        self.contract_multiplier_entry = self.form_fields.get('contract_multiplier')
+        self.risk_percentage_entry = self.form_fields.get('risk_percentage')
+        self.fixed_risk_amount_entry = self.form_fields.get('fixed_risk_amount')
 
     def setup_input_fields(self) -> None:
         """Setup input field connections and validation."""
