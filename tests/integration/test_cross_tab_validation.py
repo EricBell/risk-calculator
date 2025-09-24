@@ -27,7 +27,11 @@ class TestCrossTabValidation:
             from risk_calculator.controllers.qt_main_controller import QtMainController
 
             self.qt_app = RiskCalculatorQtApp()
-            self.qt_app.create_application()
+            # Use existing QApplication if available, otherwise create new one
+            if QApplication.instance():
+                self.qt_app.app = QApplication.instance()
+            else:
+                self.qt_app.create_application()
 
             self.controller = QtMainController()
             self.controller.initialize_application()

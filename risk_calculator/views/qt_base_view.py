@@ -4,7 +4,7 @@ Provides common functionality for all Qt-based views in the application.
 """
 
 from typing import Dict, Any, Optional, Callable
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 
 try:
     from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
@@ -19,7 +19,12 @@ from ..services.qt_layout_service import QtResponsiveLayoutService
 from ..models.ui_layout_state import UILayoutState
 
 
-class QtBaseView(QWidget, ABC):
+class QtBaseViewMeta(type(QWidget), ABCMeta):
+    """Metaclass that combines Qt's metaclass with ABCMeta to resolve conflicts."""
+    pass
+
+
+class QtBaseView(QWidget, metaclass=QtBaseViewMeta):
     """Base class for all Qt views with responsive layout support."""
 
     # Signals for field changes and form events

@@ -1,6 +1,6 @@
 """Qt Base Controller with common functionality for all Qt controllers."""
 
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from typing import Optional, Dict, List, Any, Callable
 
 try:
@@ -14,7 +14,12 @@ from ..models.risk_method import RiskMethod
 from ..views.qt_base_view import QtBaseView
 
 
-class QtBaseController(QObject, ABC):
+class QtBaseControllerMeta(type(QObject), ABCMeta):
+    """Metaclass that combines Qt's metaclass with ABCMeta to resolve conflicts."""
+    pass
+
+
+class QtBaseController(QObject, metaclass=QtBaseControllerMeta):
     """Qt-compatible base controller with signal-based event handling."""
 
     # Signals for controller events
