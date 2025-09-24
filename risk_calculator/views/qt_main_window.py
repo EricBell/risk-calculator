@@ -438,19 +438,13 @@ class QtMainWindow(QMainWindow):
     def register_cleanup_handlers(self) -> None:
         """Register cleanup handlers with the lifecycle service."""
         # Register main window cleanup
-        self.lifecycle_service.register_cleanup_handler(
-            'main_window_cleanup', self._cleanup_main_window
-        )
+        self.lifecycle_service.register_cleanup_handler(self._cleanup_main_window)
 
         # Register tab cleanup
-        self.lifecycle_service.register_cleanup_handler(
-            'tabs_cleanup', self._cleanup_tabs
-        )
+        self.lifecycle_service.register_cleanup_handler(self._cleanup_tabs)
 
         # Register window state cleanup
-        self.lifecycle_service.register_cleanup_handler(
-            'window_state_cleanup', self._cleanup_window_state
-        )
+        self.lifecycle_service.register_cleanup_handler(self._cleanup_window_state)
 
     def _cleanup_main_window(self) -> None:
         """Cleanup main window resources."""

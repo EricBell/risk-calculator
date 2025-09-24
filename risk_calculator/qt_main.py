@@ -8,11 +8,19 @@ import os
 import signal
 from typing import Optional
 
+# Add parent directory to path for direct execution
+if __name__ == "__main__" and __package__ is None:
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QIcon
 
-from .services.application_lifecycle_service import ApplicationLifecycleService
+try:
+    from .services.application_lifecycle_service import ApplicationLifecycleService
+except ImportError:
+    # Handle direct execution
+    from risk_calculator.services.application_lifecycle_service import ApplicationLifecycleService
 
 
 class RiskCalculatorQtApp:
@@ -71,14 +79,10 @@ class RiskCalculatorQtApp:
     def _setup_lifecycle_handlers(self) -> None:
         """Setup application lifecycle handlers for graceful shutdown."""
         # Register startup handlers
-        self.lifecycle_service.register_startup_handler(
-            'qt_app_init', self._on_application_startup
-        )
+        self.lifecycle_service.register_startup_handler(self._on_application_startup)
 
         # Register shutdown handlers
-        self.lifecycle_service.register_shutdown_handler(
-            'qt_app_cleanup', self._on_application_shutdown
-        )
+        self.lifecycle_service.register_shutdown_handler(self._on_application_shutdown)
 
         # Setup signal handlers for graceful termination
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -112,11 +116,20 @@ class RiskCalculatorQtApp:
     def create_main_window(self):
         """Create and configure the main window."""
         # Import here to avoid circular imports
-        from risk_calculator.controllers.qt_main_controller import QtMainController
+        try:
+            from .controllers.qt_main_controller import QtMainController
+        except ImportError:
+            from risk_calculator.controllers.qt_main_controller import QtMainController
 
         if self.main_window is None:
             # Create controller and let it create the main window
             self.controller = QtMainController()
+
+            # Connect to error signal to see actual error
+            def on_error(title, message):
+                print(f"Controller Error - {title}: {message}")
+
+            self.controller.error_occurred.connect(on_error)
 
             # Initialize the full application through the controller
             if self.controller.initialize_application():
@@ -133,7 +146,7 @@ class RiskCalculatorQtApp:
             app = self.create_application()
 
             # Initialize lifecycle service
-            self.lifecycle_service.startup()
+            self.lifecycle_service.initialize_application()
 
             # Create main window (controller handles showing it)
             main_window = self.create_main_window()
