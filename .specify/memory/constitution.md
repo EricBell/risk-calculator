@@ -26,4 +26,7 @@ Single executable or installer package deployment; No server configuration requi
 ## Governance
 Constitution defines minimum viable cross-platform desktop app standards; Changes require testing on target platforms (Windows and Linux); Performance budgets must be maintained.
 
+## Additional
+Claude nevers auto-commits changes to the repo.
+
 **Version**: 2.1.1 | **Ratified**: 2025-09-17 | **Last Amended**: 2025-09-18
