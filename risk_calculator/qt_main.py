@@ -17,7 +17,10 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QIcon
 
 try:
-    from .services.application_lifecycle_service import ApplicationLifecycleService
+    if __name__ == "__main__":
+        from services.application_lifecycle_service import ApplicationLifecycleService
+    else:
+        from .services.application_lifecycle_service import ApplicationLifecycleService
 except ImportError:
     # Handle direct execution
     from risk_calculator.services.application_lifecycle_service import ApplicationLifecycleService
@@ -126,7 +129,10 @@ class RiskCalculatorQtApp:
         """Create and configure the main window."""
         # Import here to avoid circular imports
         try:
-            from .controllers.qt_main_controller import QtMainController
+            if __name__ == "__main__":
+                from controllers.qt_main_controller import QtMainController
+            else:
+                from .controllers.qt_main_controller import QtMainController
         except ImportError:
             from risk_calculator.controllers.qt_main_controller import QtMainController
 
