@@ -9,8 +9,8 @@ from datetime import datetime
 try:
     from PySide6.QtWidgets import (QMainWindow, QTabWidget, QWidget, QVBoxLayout,
                                    QMenuBar, QMenu, QStatusBar, QApplication)
-    from PySide6.QtCore import Signal, QTimer, QSettings
-    from PySide6.QtGui import QAction, QResizeEvent, QCloseEvent
+    from PySide6.QtCore import Signal, QTimer, QSettings, Qt
+    from PySide6.QtGui import QAction, QResizeEvent, QCloseEvent, QCursor, QMouseEvent
     HAS_QT = True
 except ImportError:
     HAS_QT = False
@@ -60,6 +60,9 @@ class QtMainWindow(QMainWindow):
         # Window state
         self.is_maximized_on_startup = False
 
+        # Mouse tracking for resize cursors
+        self.resize_margin = 8  # Pixel margin for resize areas
+
         # Initialize UI
         self.setup_window_properties()
         self.setup_menu_bar()
@@ -84,6 +87,21 @@ class QtMainWindow(QMainWindow):
         # Set minimum size
         min_width, min_height = 800, 600
         self.setMinimumSize(min_width, min_height)
+
+        # Enable mouse tracking for resize cursor feedback
+        self.setMouseTracking(True)
+
+        # Set window styling for better WSLg compatibility
+        self.setStyleSheet("""
+            QMainWindow {
+                border: 2px solid #404040;
+                background-color: #f0f0f0;
+            }
+            QMainWindow::title {
+                background-color: #e0e0e0;
+                padding: 4px;
+            }
+        """)
 
         # Get recommended size from display service
         try:
@@ -504,6 +522,51 @@ class QtMainWindow(QMainWindow):
 
         # Clear startup flag after first resize
         self.is_maximized_on_startup = False
+
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        """Handle mouse move events for resize cursor feedback."""
+        if self.isMaximized():
+            # Don't show resize cursors when maximized
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+            super().mouseMoveEvent(event)
+            return
+
+        # Get mouse position relative to window
+        pos = event.pos()
+        rect = self.rect()
+
+        # Determine if mouse is in resize area
+        margin = self.resize_margin
+
+        # Check edges
+        at_left = pos.x() <= margin
+        at_right = pos.x() >= rect.width() - margin
+        at_top = pos.y() <= margin
+        at_bottom = pos.y() >= rect.height() - margin
+
+        # Set appropriate cursor based on position
+        if (at_left and at_top) or (at_right and at_bottom):
+            # Diagonal resize (NW-SE)
+            self.setCursor(Qt.CursorShape.SizeFDiagCursor)
+        elif (at_right and at_top) or (at_left and at_bottom):
+            # Diagonal resize (NE-SW)
+            self.setCursor(Qt.CursorShape.SizeBDiagCursor)
+        elif at_left or at_right:
+            # Horizontal resize
+            self.setCursor(Qt.CursorShape.SizeHorCursor)
+        elif at_top or at_bottom:
+            # Vertical resize
+            self.setCursor(Qt.CursorShape.SizeVerCursor)
+        else:
+            # Normal cursor
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+
+        super().mouseMoveEvent(event)
+
+    def leaveEvent(self, event) -> None:
+        """Reset cursor when mouse leaves window."""
+        self.setCursor(Qt.CursorShape.ArrowCursor)
+        super().leaveEvent(event)
 
     def set_window_title(self, title: str) -> None:
         """
