@@ -47,23 +47,23 @@ A daytrader wants to quickly determine the appropriate position size for a trade
 
 #### Percentage-Based Risk Method Scenarios
 1. **Given** the application is open, **When** user selects the "Equities" tab, chooses "Percentage-based" risk method, and enters stock symbol, entry price ($50), stop loss ($45), account size ($10,000), and risk tolerance (2%), **Then** the system calculates and displays the maximum share quantity (40 shares) to risk $200
-2. **Given** user is on the "Options" tab with "Percentage-based" method, **When** user enters option contract details, premium ($2.50), account size ($10,000), and risk tolerance (3%), **Then** the system calculates the appropriate number of contracts (12 contracts) to risk $300
+2. **Given** user is on the "Options" tab with "Percentage-based" method, **When** user enters option contract details, premium ($2.50), entry price ($50), stop loss price ($45), account size ($10,000), and risk tolerance (3%), **Then** the system calculates the appropriate number of contracts based on $300 risk and underlying price movement
 3. **Given** user is on the "Futures" tab with "Percentage-based" method, **When** user enters futures contract specifications, margin requirement ($4,000), tick value ($12.50), account size ($25,000), and risk tolerance (2%), **Then** the system calculates position sizing (1 contract) based on $500 risk
 
 #### Fixed Amount Risk Method Scenarios
 4. **Given** user selects "Fixed Amount" risk method on the "Equities" tab, **When** user enters stock symbol, entry price ($100), stop loss ($95), and fixed risk amount ($50), **Then** the system calculates and displays 10 shares regardless of account size
-5. **Given** user selects "Fixed Amount" method on the "Options" tab, **When** user enters premium ($1.00) and fixed risk amount ($100), **Then** the system calculates 1 contract (100 shares × $1.00 = $100 risk)
+5. **Given** user selects "Fixed Amount" method on the "Options" tab, **When** user enters premium ($1.00), entry price ($25), stop loss price ($22), and fixed risk amount ($100), **Then** the system calculates appropriate number of contracts based on $100 risk and underlying price movement
 6. **Given** user enters a fixed risk amount of $600 with account size $10,000, **When** they attempt to calculate, **Then** the system displays a warning "Fixed risk amount exceeds 5% of account size" and suggests reducing the amount
 
 #### Level-Based Risk Method Scenarios
 7. **Given** user selects "Level-Based" risk method on the "Equities" tab, **When** user enters stock symbol, entry price ($50), support level ($47), selects "Long" trade direction, and account size ($10,000), **Then** the system calculates position sizing using 2% default risk ($200) divided by $3 risk per share (67 shares)
-8. **Given** user selects "Level-Based" method on the "Futures" tab, **When** user enters contract details, entry price (4000), resistance level (4020), selects "Short" trade direction, tick size (0.25), and tick value ($12.50), **Then** the system calculates contracts based on 80 ticks × $12.50 = $1000 risk per contract
-9. **Given** user attempts to select "Level-Based" method on the "Options" tab, **When** they click the level-based radio button, **Then** the system displays "Level-based method not supported for options trading" and keeps previous method selected
+8. **Given** user selects "Level-Based" method on the "Options" tab, **When** user enters option contract details, premium ($2.00), entry price ($45), support level ($42), selects "Long" trade direction, and account size ($10,000), **Then** the system calculates appropriate number of contracts using 2% default risk ($200) divided by underlying price movement ($3 per share)
+9. **Given** user selects "Level-Based" method on the "Futures" tab, **When** user enters contract details, entry price (4000), resistance level (4020), selects "Short" trade direction, tick size (0.25), and tick value ($12.50), **Then** the system calculates contracts based on 80 ticks × $12.50 = $1000 risk per contract
 
 #### General Validation and Navigation Scenarios
 10. **Given** user has entered invalid data (negative prices, missing fields, risk tolerance above 5%), **When** they attempt to calculate, **Then** the system displays clear error messages specific to their selected risk method and prevents calculation
 11. **Given** user switches between asset class tabs, **When** they return to a previously used tab, **Then** their previous inputs and risk method selection remain saved within the session
-12. **Given** user enters a stop loss above entry price for a long position, **When** they attempt to calculate, **Then** the system displays an error message "Stop loss must be below entry price for long positions" (percentage/fixed methods) or "Support level must be below entry price for long positions" (level-based method)
+12. **Given** user enters a stop loss above entry price for a long position, **When** they attempt to calculate, **Then** the system displays an error message "Stop loss must be below entry price for long positions" (percentage/fixed methods) or "Support level must be below entry price for long positions" (level-based method) across all asset classes
 13. **Given** calculated position size exceeds available account capital, **When** calculation is performed, **Then** the system displays a warning and suggests reducing position size, risk tolerance, or fixed amount depending on selected method
 14. **Given** user switches risk calculation methods within a tab, **When** they select a different method, **Then** the UI shows/hides relevant fields, clears previous calculations, and maintains common field values (symbol, account size, entry price)
 
@@ -88,16 +88,17 @@ A daytrader wants to quickly determine the appropriate position size for a trade
 - **FR-006**: System MUST validate all numeric inputs and prevent calculation with invalid data based on selected method
 - **FR-007**: System MUST persist user inputs and risk method selection within each tab during the application session
 - **FR-008**: System MUST provide clear error messaging for invalid inputs or calculation errors specific to each risk method
-- **FR-009**: System MUST support percentage-based risk calculation using account percentage (1-5%) with stop loss distance for equities and futures
-- **FR-010**: System MUST support fixed amount risk calculation using dollar amounts ($10-$500, max 5% of account) with stop loss distance for equities and futures
-- **FR-011**: System MUST support level-based risk calculation using technical support/resistance levels with trade direction for equities and futures
-- **FR-012**: System MUST calculate options risk using percentage-based or fixed amount methods (level-based not supported for options)
+- **FR-009**: System MUST support percentage-based risk calculation using account percentage (1-5%) with stop loss distance for equities, options, and futures
+- **FR-010**: System MUST support fixed amount risk calculation using dollar amounts ($10-$500, max 5% of account) with stop loss distance for equities, options, and futures
+- **FR-011**: System MUST support level-based risk calculation using technical support/resistance levels with trade direction for equities, options, and futures
+- **FR-012**: System MUST calculate options risk using all three methods (percentage-based, fixed amount, and level-based) incorporating premium, entry price, stop loss price, and underlying price movement
 - **FR-013**: System MUST calculate futures risk accounting for margin requirements, contract specifications, and tick values across all three risk methods
 - **FR-014**: Users MUST be able to input their account size or available capital for risk calculation
 - **FR-015**: System MUST show/hide input fields dynamically based on selected risk calculation method
-- **FR-016**: System MUST maintain risk method availability per asset class (all methods for equities/futures, percentage/fixed for options)
+- **FR-016**: System MUST maintain risk method availability per asset class (all three methods available for equities, options, and futures)
 - **FR-017**: System MUST provide method-specific validation and error messages
 - **FR-018**: System MUST clear previous calculations when risk method is changed but preserve common field values
+- **FR-019**: System MUST include stop loss price field in options calculations to determine risk based on underlying stock price movement, similar to equity stop loss functionality
 
 ### Key Entities
 - **Trade**: Represents a potential trading position with entry price, stop loss/level, asset type, risk method, and calculated risk parameters
