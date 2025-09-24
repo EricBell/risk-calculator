@@ -35,11 +35,20 @@ class RiskCalculatorQtApp:
 
     def setup_high_dpi_scaling(self) -> None:
         """Configure high-DPI scaling before QApplication creation."""
-        # Enable high-DPI scaling
-        QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
+        # Note: AA_EnableHighDpiScaling and AA_UseHighDpiPixmaps are deprecated in Qt 6.x
+        # High-DPI scaling is now enabled by default, but we'll keep this for compatibility
 
-        # Use high-DPI pixmaps
-        QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
+        # Enable high-DPI scaling (deprecated but kept for Qt 5.x compatibility)
+        try:
+            QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
+        except AttributeError:
+            pass  # Not available in newer Qt versions
+
+        # Use high-DPI pixmaps (deprecated but kept for Qt 5.x compatibility)
+        try:
+            QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
+        except AttributeError:
+            pass  # Not available in newer Qt versions
 
         # Set high-DPI scale factor rounding policy
         if hasattr(Qt, 'HighDpiScaleFactorRoundingPolicy'):

@@ -66,6 +66,7 @@ class QtEquityTab(QtBaseView):
         super().__init__(parent)
 
         # Set up input_fields reference to form_fields from base class
+        # This must be done after super().__init__() when form_fields is populated
         self.input_fields = self.form_fields
 
         # Validation timer for debouncing (requires Qt app to be initialized)
@@ -332,6 +333,19 @@ class QtEquityTab(QtBaseView):
         self.fixed_risk_amount_entry = self.form_fields.get('fixed_risk_amount')
         self.stop_loss_price_fixed_entry = self.form_fields.get('stop_loss_price_fixed')
         self.support_resistance_level_entry = self.form_fields.get('support_resistance_level')
+
+        # Field references are now set up for test and controller access
+
+    def trigger_validation(self) -> None:
+        """Manually trigger validation - useful for tests and debugging."""
+        # Force update the validation state
+        self._perform_validation()
+
+        # Also emit textChanged signals for all fields to trigger controller updates
+        for field_name, field_widget in self.form_fields.items():
+            if hasattr(field_widget, 'textChanged') and hasattr(field_widget, 'text'):
+                # Emit the textChanged signal manually
+                field_widget.textChanged.emit(field_widget.text())
 
     def setup_input_fields(self) -> None:
         """Setup input field connections and validation."""

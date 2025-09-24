@@ -159,38 +159,10 @@ class QtMainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
     def setup_trading_tabs(self) -> None:
-        """Create and add all trading tabs."""
-        try:
-            # Import tab classes
-            from .qt_equity_tab import QtEquityTab
-            from .qt_options_tab import QtOptionsTab
-            from .qt_futures_tab import QtFuturesTab
-
-            # Create and add tabs
-            equity_tab = QtEquityTab()
-            equity_tab.setup_ui()
-            self.add_trading_tab("Equity", equity_tab)
-
-            options_tab = QtOptionsTab()
-            options_tab.setup_ui()
-            self.add_trading_tab("Options", options_tab)
-
-            futures_tab = QtFuturesTab()
-            futures_tab.setup_ui()
-            self.add_trading_tab("Futures", futures_tab)
-
-        except Exception as e:
-            # Fallback: add a placeholder tab
-            placeholder = QWidget()
-            placeholder_layout = QVBoxLayout(placeholder)
-            error_label = QWidget()
-            try:
-                from PySide6.QtWidgets import QLabel
-                error_label = QLabel(f"Error loading tabs: {e}")
-            except ImportError:
-                pass
-            placeholder_layout.addWidget(error_label)
-            self.add_trading_tab("Error", placeholder)
+        """Setup trading tabs - tabs will be added by the main controller."""
+        # Note: Tabs are now created and managed by QtMainController
+        # This method is kept for compatibility but doesn't create tabs anymore
+        pass
 
     def setup_status_bar(self) -> None:
         """Setup status bar."""

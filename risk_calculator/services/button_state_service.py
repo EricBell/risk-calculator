@@ -38,20 +38,12 @@ class ButtonStateService:
         # Set risk method in validation service
         self.validation_service.set_risk_method(risk_method)
 
-        # Debug: Print form data and risk method
-        print(f"DEBUG Button State: risk_method='{risk_method}', form_data={form_data}")
-
         # Validate form
         errors = self.validation_service.validate_form(form_data)
 
-        # Debug: Print validation errors
-        print(f"DEBUG Validation errors: {errors}")
-
         if len(errors) == 0:
-            print("DEBUG: Button should be ENABLED")
             return ButtonState.ENABLED
         else:
-            print("DEBUG: Button should be DISABLED")
             return ButtonState.DISABLED
 
     def should_enable_button(self, form_data: Dict[str, Any], risk_method: str) -> bool:
