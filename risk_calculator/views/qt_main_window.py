@@ -84,8 +84,8 @@ class QtMainWindow(QMainWindow):
         self.setWindowTitle("Risk Calculator")
         self.setObjectName("MainWindow")
 
-        # Set minimum size
-        min_width, min_height = 800, 600
+        # Set minimum size (reduced to allow narrower windows)
+        min_width, min_height = 600, 400  # Reduced from 800x600 to 600x400
         self.setMinimumSize(min_width, min_height)
 
         # Enable mouse tracking for resize cursor feedback

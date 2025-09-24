@@ -97,12 +97,12 @@ class QtWindowManagerService:
         """
         app = QApplication.instance()
         if not app:
-            # If no Qt app, return minimal validation
+            # If no Qt app, preserve user's size preferences and only ensure reasonable position
             return WindowConfiguration(
-                width=max(config.width, 800),
-                height=max(config.height, 600),
-                x=max(config.x, 0),
-                y=max(config.y, 0),
+                width=config.width,  # Preserve user's width
+                height=config.height,  # Preserve user's height
+                x=max(config.x, 0),  # Only ensure not negative
+                y=max(config.y, 0),  # Only ensure not negative
                 maximized=config.maximized,
                 last_updated=datetime.now()
             )
@@ -111,16 +111,20 @@ class QtWindowManagerService:
         primary_screen = app.primaryScreen()
         screen_geometry = primary_screen.availableGeometry()
 
-        # Ensure minimum size
-        adjusted_width = max(config.width, 800)
-        adjusted_height = max(config.height, 600)
+        # PRESERVE user's window size - don't override with minimum constraints
+        # Qt will enforce minimum size constraints when the window is created
+        adjusted_width = config.width
+        adjusted_height = config.height
 
-        # Ensure window fits on screen
+        # Only ensure window fits on screen (but don't override user size preferences)
         max_width = screen_geometry.width() - 50  # Leave margin
         max_height = screen_geometry.height() - 50  # Leave margin
 
-        adjusted_width = min(adjusted_width, max_width)
-        adjusted_height = min(adjusted_height, max_height)
+        # Only adjust if window is larger than screen (but preserve smaller sizes)
+        if adjusted_width > max_width:
+            adjusted_width = max_width
+        if adjusted_height > max_height:
+            adjusted_height = max_height
 
         # Ensure window is on screen
         adjusted_x = max(config.x, screen_geometry.x())
