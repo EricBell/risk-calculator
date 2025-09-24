@@ -4,6 +4,7 @@ Main application window with tabbed interface and responsive window management.
 """
 
 from typing import Optional, Dict, Any
+from datetime import datetime
 
 try:
     from PySide6.QtWidgets import (QMainWindow, QTabWidget, QWidget, QVBoxLayout,
@@ -137,6 +138,25 @@ class QtMainWindow(QMainWindow):
         reset_window_action.triggered.connect(lambda: self.menu_action_triggered.emit("reset_window_size"))
         view_menu.addAction(reset_window_action)
 
+        view_menu.addSeparator()
+
+        # Window size presets for WSLg compatibility
+        compact_action = QAction("&Compact Size (900x650)", self)
+        compact_action.setStatusTip("Set window to compact size")
+        compact_action.triggered.connect(lambda: self.menu_action_triggered.emit("resize_compact"))
+        view_menu.addAction(compact_action)
+
+        large_action = QAction("&Large Size (1200x800)", self)
+        large_action.setStatusTip("Set window to large size")
+        large_action.triggered.connect(lambda: self.menu_action_triggered.emit("resize_large"))
+        view_menu.addAction(large_action)
+
+        maximize_action = QAction("&Maximize Window", self)
+        maximize_action.setStatusTip("Maximize window")
+        maximize_action.setShortcut("Ctrl+M")
+        maximize_action.triggered.connect(lambda: self.menu_action_triggered.emit("maximize_window"))
+        view_menu.addAction(maximize_action)
+
         # Help menu
         help_menu = self.menu_bar.addMenu("&Help")
 
@@ -257,7 +277,8 @@ class QtMainWindow(QMainWindow):
                 height=geometry.height(),
                 x=geometry.x(),
                 y=geometry.y(),
-                maximized=self.isMaximized()
+                maximized=self.isMaximized(),
+                last_updated=datetime.now()
             )
 
             # Save using window manager

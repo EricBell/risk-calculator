@@ -193,7 +193,8 @@ class QtMainController(QObject):
         # Apply responsive scaling to all tabs
         for controller in self.tab_controllers.values():
             if hasattr(controller.view, 'apply_responsive_scaling'):
-                controller.view.apply_responsive_scaling(1024, 768)  # Base size
+                # Use standard design base size and let the view handle current size
+                controller.view.apply_responsive_scaling(1024, 768)
 
     @Slot(int)
     def _on_tab_changed(self, tab_index: int) -> None:
@@ -224,6 +225,12 @@ class QtMainController(QObject):
             self._reset_settings()
         elif action_name == "reset_window_size":
             self._reset_window_size()
+        elif action_name == "resize_compact":
+            self._resize_to_compact()
+        elif action_name == "resize_large":
+            self._resize_to_large()
+        elif action_name == "maximize_window":
+            self._maximize_window()
         elif action_name == "about":
             self._show_about_dialog()
 
@@ -352,6 +359,28 @@ class QtMainController(QObject):
         if self.main_window:
             self.main_window.reset_to_default_size()
 
+    def _resize_to_compact(self) -> None:
+        """Resize window to compact size (WSLg workaround)."""
+        if self.main_window:
+            self.main_window.resize(900, 650)
+            self.status_message.emit("Window resized to compact size (900x650)", 2000)
+
+    def _resize_to_large(self) -> None:
+        """Resize window to large size (WSLg workaround)."""
+        if self.main_window:
+            self.main_window.resize(1200, 800)
+            self.status_message.emit("Window resized to large size (1200x800)", 2000)
+
+    def _maximize_window(self) -> None:
+        """Maximize window (WSLg workaround)."""
+        if self.main_window:
+            if self.main_window.isMaximized():
+                self.main_window.showNormal()
+                self.status_message.emit("Window restored to normal size", 2000)
+            else:
+                self.main_window.showMaximized()
+                self.status_message.emit("Window maximized", 2000)
+
     def _show_about_dialog(self) -> None:
         """Show about dialog."""
         about_text = """
@@ -366,6 +395,7 @@ class QtMainController(QObject):
         </ul>
         <p><b>Version:</b> 2.0 (Qt Migration)</p>
         <p><b>Framework:</b> PySide6</p>
+        <p><b>Note:</b> On WSL environments, use View menu resize options if manual window resizing doesn't work.</p>
         """
 
         QMessageBox.about(self.main_window, "About Risk Calculator", about_text)
