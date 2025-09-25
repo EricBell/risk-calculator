@@ -148,15 +148,15 @@ class QtOptionsController(QtBaseController):
                     self.view.show_field_error(field_name, error_msg)
                 return None
 
-            # Check if stop loss fields are provided and use enhanced calculation
-            if trade.entry_price is not None and trade.stop_loss_price is not None:
-                # Use stop loss enhanced calculation
+            # Check if stop loss price is provided and use enhanced calculation
+            if trade.stop_loss_price is not None:
+                # Use stop loss enhanced calculation (use premium as entry price)
                 if hasattr(self.risk_calculator, 'calculate_options_with_stop_loss'):
                     calculation_result = self.risk_calculator.calculate_options_with_stop_loss(
                         account_size=trade.account_size,
                         risk_method=trade.risk_method.value,
                         option_premium=trade.premium,
-                        entry_price=trade.entry_price,
+                        entry_price=trade.premium,  # For options, premium is the entry price
                         stop_loss_price=trade.stop_loss_price,
                         risk_percentage=trade.risk_percentage,
                         fixed_risk_amount=trade.fixed_risk_amount,

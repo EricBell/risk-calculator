@@ -291,7 +291,7 @@ class EnhancedFormValidationService(FormValidationInterface):
         elif risk_method == 'level':
             required_fields = base_fields + ['level', 'entry_price', 'stop_loss_price']
         elif risk_method == 'options':
-            required_fields = base_fields + ['premium', 'contract_multiplier']
+            required_fields = base_fields + ['premium', 'contract_multiplier', 'stop_loss_price']
         elif risk_method == 'options_percentage':
             required_fields = base_fields + ['risk_percentage', 'option_premium']
         elif risk_method == 'options_fixed_amount':

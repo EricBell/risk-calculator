@@ -387,20 +387,23 @@ class RiskCalculationService(OptionsLevelBasedInterface, OptionsStopLossInterfac
             else:
                 raise ValueError(f"Unknown risk method: {risk_method}")
 
-            # Calculate cost per contract
+            # Calculate cost per contract (premium cost)
             cost_per_contract = option_premium * Decimal('100')
 
-            # Calculate contracts based on premium cost - ensure at least 1 when calculation > 0
-            contracts_decimal = risk_amount / cost_per_contract
-            if contracts_decimal > 0:
+            # Calculate risk per contract (difference between premium and stop loss)
+            risk_per_contract = abs(option_premium - stop_loss_price) * Decimal('100')
+
+            # Calculate contracts based on risk per contract
+            if risk_per_contract > 0:
+                contracts_decimal = risk_amount / risk_per_contract
                 contracts = max(1, int(contracts_decimal.quantize(Decimal('1'), rounding=ROUND_DOWN)))
             else:
                 contracts = 0
-            premium_cost = Decimal(str(contracts)) * cost_per_contract
 
-            # Calculate stop loss risk (simplified - premium is max loss for long options)
-            stop_loss_risk = premium_cost
-            max_loss = premium_cost  # For long options, max loss is premium paid
+            # Calculate actual costs and risks
+            premium_cost = Decimal(str(contracts)) * cost_per_contract
+            stop_loss_risk = Decimal(str(contracts)) * risk_per_contract
+            max_loss = stop_loss_risk  # Maximum loss is the stop loss risk
 
             return {
                 'contracts': contracts,

@@ -258,9 +258,9 @@ class QtOptionsTab(QtBaseView):
         info_text = (
             "• Premium is the cost per share of the option\n"
             "• Total cost = Premium × Contract Multiplier × Number of Contracts\n"
-            "• Risk is limited to premium paid for bought options\n"
-            "• For percentage/fixed risk: only premium and multiplier are needed\n"
-            "• Entry price only required for level-based calculations"
+            "• Stop loss price is required to calculate position sizing\n"
+            "• Risk = |Premium - Stop Loss| × Multiplier × Contracts\n"
+            "• For LONG: stop loss < premium, for SHORT: stop loss > premium"
         )
 
         info_label = QLabel(info_text)
@@ -333,6 +333,15 @@ class QtOptionsTab(QtBaseView):
         error_label = self.create_error_label("risk_percentage")
         layout.addWidget(error_label, row, 2)
 
+        row += 1
+
+        # Stop loss price (required for position sizing)
+        label, field = self.create_form_field("stop_loss_price", "Stop Loss Price ($)", "0.65", True)
+        layout.addWidget(label, row, 0)
+        layout.addWidget(field, row, 1)
+        error_label = self.create_error_label("stop_loss_price")
+        layout.addWidget(error_label, row, 2)
+
         return group
 
     def _create_fixed_amount_frame(self) -> QGroupBox:
@@ -353,6 +362,15 @@ class QtOptionsTab(QtBaseView):
         layout.addWidget(label, row, 0)
         layout.addWidget(field, row, 1)
         error_label = self.create_error_label("fixed_risk_amount")
+        layout.addWidget(error_label, row, 2)
+
+        row += 1
+
+        # Stop loss price (required for position sizing)
+        label, field = self.create_form_field("stop_loss_price", "Stop Loss Price ($)", "0.65", True)
+        layout.addWidget(label, row, 0)
+        layout.addWidget(field, row, 1)
+        error_label = self.create_error_label("stop_loss_price")
         layout.addWidget(error_label, row, 2)
 
         return group
@@ -519,12 +537,25 @@ class QtOptionsTab(QtBaseView):
 
         result_text += f"\nAccount Size: ${float(form_data.get('account_size', 0)):.2f}\n"
 
+        # Stop loss information
+        stop_loss = form_data.get('stop_loss_price', '')
+        if stop_loss:
+            result_text += f"Stop Loss Price: ${float(stop_loss):.2f}\n"
+            premium = float(form_data.get('premium', 0))
+            risk_per_share = abs(premium - float(stop_loss))
+            result_text += f"Risk per Share: ${risk_per_share:.2f}\n"
+
         # Options-specific calculations
         premium = float(form_data.get('premium', 0))
         multiplier = float(form_data.get('contract_multiplier', 100))
         if premium > 0 and multiplier > 0:
             cost_per_contract = premium * multiplier
             result_text += f"Cost per Contract: ${cost_per_contract:.2f}\n"
+
+            # Risk per contract calculation
+            if stop_loss:
+                risk_per_contract = risk_per_share * multiplier
+                result_text += f"Risk per Contract: ${risk_per_contract:.2f}\n"
 
         # Position guidelines
         result_text += "\n=== POSITION GUIDELINES ===\n"
@@ -557,10 +588,11 @@ class QtOptionsTab(QtBaseView):
 
         # Options-specific notes
         result_text += "\n=== OPTIONS TRADING NOTES ===\n"
-        result_text += "• Risk is limited to premium paid for bought options\n"
-        result_text += "• Consider time decay (theta) impact on option value\n"
-        result_text += "• Implied volatility affects option pricing\n"
-        result_text += "• Monitor expiration date and exercise conditions\n"
+        result_text += "• Position sized based on stop loss risk, not premium cost\n"
+        result_text += "• Risk per contract = |Premium - Stop Loss| × Multiplier\n"
+        result_text += "• For SHORT options: stop loss should be > premium\n"
+        result_text += "• For LONG options: stop loss should be < premium\n"
+        result_text += "• Consider time decay (theta) and implied volatility impacts\n"
 
         return result_text
 

@@ -1,7 +1,7 @@
 
 # Implementation Plan: Qt Application Refinement and Tkinter Deprecation
 
-**Branch**: `005-fix-button-deprecate` | **Date**: 2025-09-23 | **Spec**: [spec.md](./spec.md)
+**Branch**: `005-fix-button-deprecate` | **Date**: 2025-09-23 | **Updated**: 2025-09-25 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/005-fix-button-deprecate/spec.md`
 
 ## Execution Flow (/plan command scope)
@@ -31,7 +31,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Refine the existing Qt-based risk calculator application by completely deprecating the Tkinter version, implementing intelligent Calculate Position button enablement with real-time validation feedback, enhancing options trading with level-based risk calculations and stop loss price functionality (bringing options to parity with equities), and ensuring proper application lifecycle management. Primary requirements include removing Tkinter access, adding comprehensive form validation with clear error messaging, implementing all three risk methods for options trading, and implementing complete process termination on application exit.
+Refine the existing Qt-based risk calculator application by completely deprecating the Tkinter version, implementing intelligent Calculate Position button enablement with real-time validation feedback, and ensuring proper application lifecycle management. **COMPLETED**: Enhanced options trading with stop loss risk calculations that properly size positions based on |Premium - Stop Loss| × Multiplier rather than premium cost alone. **REMAINING**: Remove Tkinter access, add comprehensive form validation with clear error messaging, and implement complete process termination on application exit.
 
 ## Technical Context
 **Language/Version**: Python 3.12+ (preserving existing codebase compatibility)
@@ -42,7 +42,7 @@ Refine the existing Qt-based risk calculator application by completely deprecati
 **Project Type**: single (desktop application)
 **Performance Goals**: <100ms UI response time, real-time validation feedback, <3s startup
 **Constraints**: <100MB memory usage, offline-capable, no server dependencies, complete process cleanup
-**Scale/Scope**: Single-user desktop application, existing codebase refinement, 3 trading asset types with enhanced options functionality
+**Scale/Scope**: Single-user desktop application, existing codebase refinement, 3 trading asset types with **COMPLETED** enhanced options stop loss functionality
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -189,9 +189,11 @@ ios/ or android/
 - Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
 - Button validation interface contracts → contract test tasks [P]
 - Form/Button validation entities → model implementation tasks [P]
-- Options enhancement contracts → options UI and calculation tasks
-- Level-based risk method → options controller and validation tasks
-- Stop loss price functionality → options model and service tasks
+- **COMPLETED**: Options all three risk methods (percentage, fixed amount, level-based) - achieving parity with equities
+- **COMPLETED**: Options stop loss enhancement for percentage/fixed methods (risk calculation, UI fields, validation)
+- **COMPLETED**: Risk-based position sizing for options (|Premium - Stop Loss| × Multiplier)
+- **COMPLETED**: Level-based risk method with support/resistance levels for options
+- **COMPLETED**: Enhanced results display with detailed calculations
 - Tkinter deprecation → entry point modification tasks
 - Application lifecycle → process management tasks
 - Quickstart scenarios → integration test tasks
@@ -200,8 +202,8 @@ ios/ or android/
 - TDD order: Contract tests before implementation
 - Dependency order: Models before services before controllers before UI
 - Tkinter deprecation can run parallel with validation work [P]
-- Options enhancements can run parallel with button validation work [P]
-- Level-based and stop loss functionality sequential within options (model → service → controller → UI)
+- **COMPLETED**: Options stop loss functionality (model → service → controller → UI)
+- **COMPLETED**: Risk calculation updates and validation enhancements
 - Process management tasks sequential due to Qt application lifecycle dependencies
 - Mark [P] for parallel execution (independent files/features)
 
@@ -209,12 +211,13 @@ ios/ or android/
 1. **Tkinter Deprecation**: Entry point modification, deprecation warnings
 2. **Real-time Validation**: Signal/slot connections, validation service integration
 3. **Button State Management**: Qt widget state updates, tooltip management
-4. **Options Enhancements**: Level-based risk method implementation, stop loss price field addition
-5. **Risk Method Parity**: Ensure all three risk methods work across all asset types
-6. **Process Lifecycle**: Qt application cleanup, resource management
-7. **Cross-Tab Consistency**: Equity, Options, Futures validation uniformity with enhanced options
+4. **COMPLETED - Options Enhancements**: Stop loss price fields, risk calculations, validation updates
+5. **COMPLETED - Risk-Based Position Sizing**: |Premium - Stop Loss| × Multiplier implementation
+6. **COMPLETED - Enhanced Results Display**: Detailed calculation breakdowns and explanations
+7. **Process Lifecycle**: Qt application cleanup, resource management
+8. **Cross-Tab Consistency**: Equity, Options, Futures validation uniformity (options now enhanced)
 
-**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md (increased due to options enhancements)
+**Estimated Output**: 20-25 numbered, ordered tasks in tasks.md (reduced due to completed options enhancements)
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
@@ -242,8 +245,20 @@ ios/ or android/
 - [x] Phase 1: Design complete (/plan command)
 - [x] Phase 2: Task planning complete (/plan command - describe approach only)
 - [ ] Phase 3: Tasks generated (/tasks command)
-- [ ] Phase 4: Implementation complete
+- [✓] **PARTIAL** Phase 4: Implementation (options stop loss functionality completed 2025-09-25)
 - [ ] Phase 5: Validation passed
+
+**Implementation Progress (2025-09-25)**:
+- [x] **Options All Three Risk Methods**: Implemented percentage, fixed amount, AND level-based for options
+- [x] **Options Level-Based Method**: Added support/resistance levels and trade direction
+- [x] **Options Stop Loss Fields**: Added stop loss price fields to percentage/fixed amount methods
+- [x] **Risk Calculation Updates**: Implemented |Premium - Stop Loss| × Multiplier formula for percentage/fixed
+- [x] **Position Sizing Fix**: Changed from premium cost to risk-based calculations for percentage/fixed
+- [x] **Enhanced Results Display**: Added stop loss details and risk breakdowns
+- [x] **Validation Updates**: Made stop loss price required for percentage/fixed options calculations
+- [ ] **Tkinter Deprecation**: Remove Tkinter version access
+- [ ] **Button Validation**: Improve Calculate button enablement logic
+- [ ] **Process Cleanup**: Application lifecycle management
 
 **Gate Status**:
 - [x] Initial Constitution Check: PASS
