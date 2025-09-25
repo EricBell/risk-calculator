@@ -167,12 +167,13 @@ class QtOptionsController(QtBaseController):
                     # Convert enhanced calculation result format
                     if isinstance(calculation_result, dict) and 'contracts' in calculation_result:
                         from ..models.calculation_result import CalculationResult
-                        calculation_result = CalculationResult(
-                            success=True,
+                        result = CalculationResult()
+                        result.set_success(
                             position_size=calculation_result['contracts'],
-                            estimated_risk=float(calculation_result['risk_amount']),
-                            warnings=[]
+                            estimated_risk=Decimal(str(calculation_result['risk_amount'])),
+                            risk_method=trade.risk_method
                         )
+                        calculation_result = result
                 else:
                     # Fallback to standard calculation
                     calculation_result = self.risk_calculator.calculate_option_position(trade)
