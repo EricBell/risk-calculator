@@ -211,7 +211,25 @@ class QtBaseView(QWidget, metaclass=QtBaseViewMeta):
         Returns:
             Dict[str, str]: Field names to values
         """
-        return {name: field.text() for name, field in self.form_fields.items()}
+        form_data = {}
+        for name, field in self.form_fields.items():
+            try:
+                # Handle different widget types
+                if hasattr(field, 'currentText'):  # QComboBox
+                    form_data[name] = field.currentText()
+                elif hasattr(field, 'text'):  # QLineEdit, QLabel
+                    form_data[name] = field.text()
+                elif hasattr(field, 'isChecked'):  # QCheckBox, QRadioButton
+                    form_data[name] = str(field.isChecked())
+                elif hasattr(field, 'value'):  # QSpinBox, QDoubleSpinBox
+                    form_data[name] = str(field.value())
+                else:
+                    # Fallback for unknown widget types
+                    form_data[name] = ""
+            except Exception as e:
+                # If we can't get the value, use empty string
+                form_data[name] = ""
+        return form_data
 
     def set_field_value(self, field_name: str, value: str) -> None:
         """

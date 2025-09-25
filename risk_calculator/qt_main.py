@@ -41,17 +41,23 @@ class RiskCalculatorQtApp:
         # Note: AA_EnableHighDpiScaling and AA_UseHighDpiPixmaps are deprecated in Qt 6.x
         # High-DPI scaling is now enabled by default, but we'll keep this for compatibility
 
-        # Enable high-DPI scaling (deprecated but kept for Qt 5.x compatibility)
-        try:
-            QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
-        except AttributeError:
-            pass  # Not available in newer Qt versions
+        # Enable high-DPI scaling (deprecated in Qt6 - now enabled by default)
+        # Only set for Qt5 compatibility, suppress warnings for Qt6
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            try:
+                QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
+            except AttributeError:
+                pass  # Not available in newer Qt versions
 
-        # Use high-DPI pixmaps (deprecated but kept for Qt 5.x compatibility)
-        try:
-            QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
-        except AttributeError:
-            pass  # Not available in newer Qt versions
+        # Use high-DPI pixmaps (deprecated in Qt6 - now enabled by default)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            try:
+                QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
+            except AttributeError:
+                pass  # Not available in newer Qt versions
 
         # Set high-DPI scale factor rounding policy
         if hasattr(Qt, 'HighDpiScaleFactorRoundingPolicy'):
