@@ -380,7 +380,8 @@ class TestDisplayServiceIntegration:
             platform="Linux"
         )
 
-        with patch.object(self.display_service, 'detect_display_profile', return_value=mock_profile):
+        with patch.object(self.display_service, 'detect_display_profile', return_value=mock_profile), \
+             patch.object(self.display_service, 'get_screen_dimensions', return_value=(1920, 1080)):
             # Should handle gracefully and return defaults
             scale_factor = self.display_service.get_dpi_scale_factor()
             assert scale_factor == 1.0

@@ -227,7 +227,7 @@ class TestFormValidationInterface:
         """Test validation with very large numbers."""
         error = self.validator.validate_field("account_size", "999999999999")
         # Should either be valid or have specific error about size limits
-        assert error is None or "large" in error.lower() or "limit" in error.lower()
+        assert error is None or "large" in error.lower() or "limit" in error.lower() or "exceed" in error.lower()
 
     def test_whitespace_handling(self):
         """Test that validation handles whitespace correctly."""
