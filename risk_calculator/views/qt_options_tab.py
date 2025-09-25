@@ -259,7 +259,8 @@ class QtOptionsTab(QtBaseView):
             "• Premium is the cost per share of the option\n"
             "• Total cost = Premium × Contract Multiplier × Number of Contracts\n"
             "• Risk is limited to premium paid for bought options\n"
-            "• Level-based method not available for options"
+            "• For percentage/fixed risk: only premium and multiplier are needed\n"
+            "• Entry price only required for level-based calculations"
         )
 
         info_label = QLabel(info_text)
@@ -332,24 +333,6 @@ class QtOptionsTab(QtBaseView):
         error_label = self.create_error_label("risk_percentage")
         layout.addWidget(error_label, row, 2)
 
-        row += 1
-
-        # Entry price (optional for stop loss functionality)
-        label, field = self.create_form_field("entry_price", "Entry Price ($)", "50.00", False)
-        layout.addWidget(label, row, 0)
-        layout.addWidget(field, row, 1)
-        error_label = self.create_error_label("entry_price")
-        layout.addWidget(error_label, row, 2)
-
-        row += 1
-
-        # Stop loss price (optional)
-        label, field = self.create_form_field("stop_loss_price", "Stop Loss Price ($)", "47.00", False)
-        layout.addWidget(label, row, 0)
-        layout.addWidget(field, row, 1)
-        error_label = self.create_error_label("stop_loss_price")
-        layout.addWidget(error_label, row, 2)
-
         return group
 
     def _create_fixed_amount_frame(self) -> QGroupBox:
@@ -370,24 +353,6 @@ class QtOptionsTab(QtBaseView):
         layout.addWidget(label, row, 0)
         layout.addWidget(field, row, 1)
         error_label = self.create_error_label("fixed_risk_amount")
-        layout.addWidget(error_label, row, 2)
-
-        row += 1
-
-        # Entry price (optional for stop loss functionality)
-        label, field = self.create_form_field("entry_price", "Entry Price ($)", "50.00", False)
-        layout.addWidget(label, row, 0)
-        layout.addWidget(field, row, 1)
-        error_label = self.create_error_label("entry_price")
-        layout.addWidget(error_label, row, 2)
-
-        row += 1
-
-        # Stop loss price (optional)
-        label, field = self.create_form_field("stop_loss_price", "Stop Loss Price ($)", "47.00", False)
-        layout.addWidget(label, row, 0)
-        layout.addWidget(field, row, 1)
-        error_label = self.create_error_label("stop_loss_price")
         layout.addWidget(error_label, row, 2)
 
         return group
