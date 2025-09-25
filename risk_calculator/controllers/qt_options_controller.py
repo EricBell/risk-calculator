@@ -1,4 +1,4 @@
-"""Qt Options Controller adapter for options trading (percentage and fixed amount only)."""
+"""Qt Options Controller adapter for options trading with level-based and stop loss support."""
 
 from decimal import Decimal
 from typing import Optional, Dict, List, Any
@@ -14,7 +14,7 @@ from ..views.qt_options_tab import QtOptionsTab
 
 
 class QtOptionsController(QtBaseController):
-    """Qt-compatible controller for options trading (no level-based method)."""
+    """Qt-compatible controller for options trading with level-based and stop loss support."""
 
     def __init__(self, view: QtOptionsTab, risk_calculator=None, trade_validator=None):
         """
@@ -57,7 +57,8 @@ class QtOptionsController(QtBaseController):
             return base_fields + ['risk_percentage']
         elif self.current_risk_method == RiskMethod.FIXED_AMOUNT:
             return base_fields + ['fixed_risk_amount']
-        # Level-based not supported for options
+        elif self.current_risk_method == RiskMethod.LEVEL_BASED:
+            return base_fields + ['support_level', 'resistance_level']
 
         return base_fields
 
@@ -104,7 +105,17 @@ class QtOptionsController(QtBaseController):
                 if form_data.get('fixed_risk_amount'):
                     trade.fixed_risk_amount = Decimal(form_data['fixed_risk_amount'])
 
-            # Level-based method not supported for options
+            elif trade.risk_method == RiskMethod.LEVEL_BASED:
+                if form_data.get('support_level'):
+                    trade.support_level = Decimal(form_data['support_level'])
+                if form_data.get('resistance_level'):
+                    trade.resistance_level = Decimal(form_data['resistance_level'])
+
+            # Stop loss fields (optional for all methods)
+            if form_data.get('entry_price'):
+                trade.entry_price = Decimal(form_data['entry_price'])
+            if form_data.get('stop_loss_price'):
+                trade.stop_loss_price = Decimal(form_data['stop_loss_price'])
 
         except (ValueError, TypeError, KeyError):
             # Log error but return trade object (validation will catch issues)
@@ -114,8 +125,8 @@ class QtOptionsController(QtBaseController):
 
     def _is_method_supported(self, method: RiskMethod) -> bool:
         """Check if risk method is supported by options trading."""
-        # Level-based method not supported for options
-        return method in [RiskMethod.PERCENTAGE, RiskMethod.FIXED_AMOUNT]
+        # All methods now supported for options
+        return method in [RiskMethod.PERCENTAGE, RiskMethod.FIXED_AMOUNT, RiskMethod.LEVEL_BASED]
 
     def _perform_calculation(self, trade: OptionTrade) -> Optional[Dict[str, Any]]:
         """
@@ -128,11 +139,6 @@ class QtOptionsController(QtBaseController):
             Dict[str, Any] or None: Calculation result
         """
         try:
-            # Check if level-based method is selected (should not be available in UI)
-            if trade.risk_method == RiskMethod.LEVEL_BASED:
-                self.error_occurred.emit("Level-based method not supported for options trading")
-                return None
-
             # Validate trade first
             validation_result = self.trade_validator.validate_option_trade(trade)
 
@@ -142,8 +148,37 @@ class QtOptionsController(QtBaseController):
                     self.view.show_field_error(field_name, error_msg)
                 return None
 
-            # Perform calculation
-            calculation_result = self.risk_calculator.calculate_option_position(trade)
+            # Check if stop loss fields are provided and use enhanced calculation
+            if trade.entry_price is not None and trade.stop_loss_price is not None:
+                # Use stop loss enhanced calculation
+                if hasattr(self.risk_calculator, 'calculate_options_with_stop_loss'):
+                    calculation_result = self.risk_calculator.calculate_options_with_stop_loss(
+                        account_size=trade.account_size,
+                        risk_method=trade.risk_method.value,
+                        option_premium=trade.premium,
+                        entry_price=trade.entry_price,
+                        stop_loss_price=trade.stop_loss_price,
+                        risk_percentage=trade.risk_percentage,
+                        fixed_risk_amount=trade.fixed_risk_amount,
+                        support_level=trade.support_level,
+                        resistance_level=trade.resistance_level
+                    )
+
+                    # Convert enhanced calculation result format
+                    if isinstance(calculation_result, dict) and 'contracts' in calculation_result:
+                        from ..models.calculation_result import CalculationResult
+                        calculation_result = CalculationResult(
+                            success=True,
+                            position_size=calculation_result['contracts'],
+                            estimated_risk=float(calculation_result['risk_amount']),
+                            warnings=[]
+                        )
+                else:
+                    # Fallback to standard calculation
+                    calculation_result = self.risk_calculator.calculate_option_position(trade)
+            else:
+                # Standard calculation without stop loss
+                calculation_result = self.risk_calculator.calculate_option_position(trade)
 
             if calculation_result.success:
                 # Calculate position value (position_size * premium * contract_multiplier)
@@ -421,3 +456,171 @@ class QtOptionsController(QtBaseController):
 
         # Note: We do NOT call self.view.set_calculate_button_enabled() here
         # because this controller uses the ButtonStateService for button management
+
+    def calculate_level_based_options(self) -> Optional[Dict[str, Any]]:
+        """
+        Calculate options position using level-based risk method.
+
+        Returns:
+            Dict[str, Any] or None: Level-based calculation result
+        """
+        try:
+            form_data = self.get_current_trade_data()
+
+            # Validate required fields for level-based method
+            required_fields = ['account_size', 'support_level', 'resistance_level', 'premium']
+            for field in required_fields:
+                if not form_data.get(field, '').strip():
+                    self.error_occurred.emit(f"Missing required field for level-based calculation: {field}")
+                    return None
+
+            # Use level-based calculation service method
+            if hasattr(self.risk_calculator, 'calculate_level_based_risk'):
+                result = self.risk_calculator.calculate_level_based_risk(
+                    account_size=Decimal(form_data['account_size']),
+                    support_level=Decimal(form_data['support_level']),
+                    resistance_level=Decimal(form_data['resistance_level']),
+                    option_premium=Decimal(form_data['premium']),
+                    entry_price=Decimal(form_data['entry_price']) if form_data.get('entry_price') else None,
+                    stop_loss_price=Decimal(form_data['stop_loss_price']) if form_data.get('stop_loss_price') else None
+                )
+
+                # Format result for consistency with other methods
+                return {
+                    'position_size': result['contracts'],
+                    'estimated_risk': float(result['risk_amount']),
+                    'position_value': float(result['premium_cost']),
+                    'risk_method': 'level_based',
+                    'level_range': float(result['level_range']),
+                    'risk_percentage': float(result['risk_percentage']),
+                    'warnings': [],
+                    'success': True
+                }
+            else:
+                self.error_occurred.emit("Level-based calculation not available")
+                return None
+
+        except Exception as e:
+            self.error_occurred.emit(f"Level-based calculation failed: {str(e)}")
+            return None
+
+    def validate_stop_loss_constraints(self, form_data: Dict[str, Any]) -> List[str]:
+        """
+        Validate stop loss constraints for options trading.
+
+        Args:
+            form_data: Current form data
+
+        Returns:
+            List[str]: List of validation error messages
+        """
+        errors = []
+
+        try:
+            entry_price = form_data.get('entry_price')
+            stop_loss_price = form_data.get('stop_loss_price')
+            trade_direction = form_data.get('trade_direction', 'call').lower()
+
+            if entry_price and stop_loss_price:
+                entry_val = Decimal(str(entry_price))
+                stop_val = Decimal(str(stop_loss_price))
+
+                # For call options (or default), stop loss should be below entry
+                # For put options, stop loss should be above entry
+                if trade_direction in ['call', 'long', '']:  # Default to call behavior
+                    if stop_val >= entry_val:
+                        errors.append("Stop loss price must be below entry price for call options")
+                elif trade_direction in ['put', 'short']:
+                    if stop_val <= entry_val:
+                        errors.append("Stop loss price must be above entry price for put options")
+
+                # Additional stop loss validations
+                price_diff = abs(entry_val - stop_val)
+                if price_diff == 0:
+                    errors.append("Stop loss price cannot equal entry price")
+                elif price_diff < Decimal('0.01'):
+                    errors.append("Stop loss price too close to entry price")
+
+        except (ValueError, TypeError) as e:
+            errors.append(f"Invalid price values for stop loss validation: {str(e)}")
+
+        return errors
+
+    def get_enhanced_calculation_summary(self) -> Dict[str, Any]:
+        """
+        Get enhanced calculation summary including level-based and stop loss data.
+
+        Returns:
+            Dict[str, Any]: Enhanced calculation summary
+        """
+        base_summary = self.get_calculation_summary()
+        form_data = self.get_current_trade_data()
+
+        # Add level-based specific data
+        if self.current_risk_method == RiskMethod.LEVEL_BASED:
+            base_summary.update({
+                'support_level': form_data.get('support_level', 0),
+                'resistance_level': form_data.get('resistance_level', 0),
+                'level_range': self.calculation_result.get('level_range', 0) if self.calculation_result else 0
+            })
+
+        # Add stop loss data if present
+        if form_data.get('entry_price') or form_data.get('stop_loss_price'):
+            base_summary.update({
+                'entry_price': form_data.get('entry_price', 0),
+                'stop_loss_price': form_data.get('stop_loss_price', 0),
+                'has_stop_loss': bool(form_data.get('stop_loss_price'))
+            })
+
+            # Calculate stop loss metrics if both prices available
+            if form_data.get('entry_price') and form_data.get('stop_loss_price'):
+                try:
+                    entry = Decimal(str(form_data['entry_price']))
+                    stop = Decimal(str(form_data['stop_loss_price']))
+                    base_summary['stop_loss_distance'] = float(abs(entry - stop))
+                    base_summary['stop_loss_percentage'] = float((abs(entry - stop) / entry) * 100)
+                except (ValueError, TypeError, ZeroDivisionError):
+                    pass
+
+        return base_summary
+
+    def handle_level_based_method_change(self) -> None:
+        """Handle switching to level-based risk method."""
+        # Clear any previous calculation results
+        self._clear_calculation_result()
+
+        # Update required fields
+        self._update_validation_status()
+
+        # Update button state
+        self._update_button_state()
+
+        # Emit signal if view needs to update UI
+        if hasattr(self.view, 'level_based_method_selected'):
+            self.view.level_based_method_selected.emit()
+
+    def handle_stop_loss_field_change(self, field_name: str, value: str) -> None:
+        """
+        Handle changes to stop loss related fields.
+
+        Args:
+            field_name: Name of the field that changed
+            value: New field value
+        """
+        # Update internal trade object
+        self.update_trade_object()
+
+        # Perform stop loss validation
+        if field_name in ['entry_price', 'stop_loss_price']:
+            form_data = self.get_current_trade_data()
+            errors = self.validate_stop_loss_constraints(form_data)
+
+            # Show validation errors
+            if errors and hasattr(self.view, 'show_field_error'):
+                for error in errors:
+                    self.view.show_field_error(field_name, error)
+            elif hasattr(self.view, 'clear_field_error'):
+                self.view.clear_field_error(field_name)
+
+        # Update validation status
+        self._update_validation_status()

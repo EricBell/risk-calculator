@@ -195,6 +195,56 @@ class QtOptionsTab(QtBaseView):
 
         return group
 
+    def _create_level_based_frame(self) -> QGroupBox:
+        """
+        Create level-based risk method frame for options.
+
+        Returns:
+            QGroupBox: Level-based method frame
+        """
+        group = QGroupBox("Level-based Risk Calculation")
+        layout = QGridLayout(group)
+        layout.setSpacing(self.layout_service.get_scaled_spacing(8))
+
+        row = 0
+
+        # Support level
+        label, field = self.create_form_field("support_level", "Support Level ($)", "48.00", True)
+        layout.addWidget(label, row, 0)
+        layout.addWidget(field, row, 1)
+        error_label = self.create_error_label("support_level")
+        layout.addWidget(error_label, row, 2)
+
+        row += 1
+
+        # Resistance level
+        label, field = self.create_form_field("resistance_level", "Resistance Level ($)", "52.00", True)
+        layout.addWidget(label, row, 0)
+        layout.addWidget(field, row, 1)
+        error_label = self.create_error_label("resistance_level")
+        layout.addWidget(error_label, row, 2)
+
+        row += 1
+
+        # Trade direction
+        label, field = self.create_form_field("trade_direction", "Trade Direction", "call", True)
+        # Make it a combo box for call/put selection
+        if isinstance(field, QLineEdit):
+            # Replace the QLineEdit with a QComboBox
+            direction_combo = QComboBox()
+            direction_combo.addItems(["call", "put"])
+            direction_combo.setObjectName("trade_direction")
+            self.layout_service.apply_responsive_font_scaling(direction_combo, 10)
+            self.form_fields["trade_direction"] = direction_combo
+            field = direction_combo
+
+        layout.addWidget(label, row, 0)
+        layout.addWidget(field, row, 1)
+        error_label = self.create_error_label("trade_direction")
+        layout.addWidget(error_label, row, 2)
+
+        return group
+
     def _create_info_section(self) -> QGroupBox:
         """
         Create informational section about options trading.
@@ -235,10 +285,11 @@ class QtOptionsTab(QtBaseView):
         layout.addWidget(method_label)
 
         self.risk_method_combo = QComboBox()
-        # Only percentage and fixed amount for options
+        # All three methods now supported for options
         self.risk_method_combo.addItems([
             "Percentage-based Risk",
-            "Fixed Amount Risk"
+            "Fixed Amount Risk",
+            "Level-based Risk"
         ])
         self.layout_service.apply_responsive_font_scaling(self.risk_method_combo, 10)
 
@@ -251,12 +302,15 @@ class QtOptionsTab(QtBaseView):
         return group
 
     def _create_method_frames(self) -> None:
-        """Create method-specific input frames (only percentage and fixed amount)."""
+        """Create method-specific input frames (now including level-based)."""
         # Percentage method frame
         self.method_frames[RiskMethod.PERCENTAGE] = self._create_percentage_frame()
 
         # Fixed amount method frame
         self.method_frames[RiskMethod.FIXED_AMOUNT] = self._create_fixed_amount_frame()
+
+        # Level-based method frame
+        self.method_frames[RiskMethod.LEVEL_BASED] = self._create_level_based_frame()
 
     def _create_percentage_frame(self) -> QGroupBox:
         """
@@ -276,6 +330,24 @@ class QtOptionsTab(QtBaseView):
         layout.addWidget(label, row, 0)
         layout.addWidget(field, row, 1)
         error_label = self.create_error_label("risk_percentage")
+        layout.addWidget(error_label, row, 2)
+
+        row += 1
+
+        # Entry price (optional for stop loss functionality)
+        label, field = self.create_form_field("entry_price", "Entry Price ($)", "50.00", False)
+        layout.addWidget(label, row, 0)
+        layout.addWidget(field, row, 1)
+        error_label = self.create_error_label("entry_price")
+        layout.addWidget(error_label, row, 2)
+
+        row += 1
+
+        # Stop loss price (optional)
+        label, field = self.create_form_field("stop_loss_price", "Stop Loss Price ($)", "47.00", False)
+        layout.addWidget(label, row, 0)
+        layout.addWidget(field, row, 1)
+        error_label = self.create_error_label("stop_loss_price")
         layout.addWidget(error_label, row, 2)
 
         return group
@@ -298,6 +370,24 @@ class QtOptionsTab(QtBaseView):
         layout.addWidget(label, row, 0)
         layout.addWidget(field, row, 1)
         error_label = self.create_error_label("fixed_risk_amount")
+        layout.addWidget(error_label, row, 2)
+
+        row += 1
+
+        # Entry price (optional for stop loss functionality)
+        label, field = self.create_form_field("entry_price", "Entry Price ($)", "50.00", False)
+        layout.addWidget(label, row, 0)
+        layout.addWidget(field, row, 1)
+        error_label = self.create_error_label("entry_price")
+        layout.addWidget(error_label, row, 2)
+
+        row += 1
+
+        # Stop loss price (optional)
+        label, field = self.create_form_field("stop_loss_price", "Stop Loss Price ($)", "47.00", False)
+        layout.addWidget(label, row, 0)
+        layout.addWidget(field, row, 1)
+        error_label = self.create_error_label("stop_loss_price")
         layout.addWidget(error_label, row, 2)
 
         return group
@@ -518,7 +608,8 @@ class QtOptionsTab(QtBaseView):
         """
         method_map = {
             0: RiskMethod.PERCENTAGE,
-            1: RiskMethod.FIXED_AMOUNT
+            1: RiskMethod.FIXED_AMOUNT,
+            2: RiskMethod.LEVEL_BASED
         }
 
         if index in method_map:
@@ -545,7 +636,8 @@ class QtOptionsTab(QtBaseView):
         """
         method_map = {
             "percentage": RiskMethod.PERCENTAGE,
-            "fixed_amount": RiskMethod.FIXED_AMOUNT
+            "fixed_amount": RiskMethod.FIXED_AMOUNT,
+            "level_based": RiskMethod.LEVEL_BASED
         }
         return method_map.get(risk_method)
 

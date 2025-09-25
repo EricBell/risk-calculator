@@ -124,6 +124,26 @@ class EnhancedFormValidationService(FormValidationInterface):
                 'max_value': 10000,
                 'decimal_places': 0
             },
+            'support_level': {
+                'required': True,
+                'type': 'positive_numeric',
+                'min_value': 0.01,
+                'max_value': 1000000,
+                'decimal_places': 4
+            },
+            'resistance_level': {
+                'required': True,
+                'type': 'positive_numeric',
+                'min_value': 0.01,
+                'max_value': 1000000,
+                'decimal_places': 4
+            },
+            'trade_direction': {
+                'required': True,
+                'type': 'choice',
+                'choices': ['call', 'put'],
+                'case_insensitive': True
+            },
             'tick_value': {
                 'required': True,
                 'type': 'positive_numeric',
@@ -223,6 +243,16 @@ class EnhancedFormValidationService(FormValidationInterface):
         cross_field_errors = self._validate_cross_field_constraints(form_data)
         errors.update(cross_field_errors)
 
+        # Options-specific validations
+        if 'level_based' in self._current_risk_method or 'options_level_based' == self._current_risk_method:
+            level_errors = self.validate_level_based_options(form_data)
+            errors.update(level_errors)
+
+        if ('stop_loss' in self._current_risk_method or 'options_with_stop_loss' == self._current_risk_method or
+            ('entry_price' in form_data and 'stop_loss_price' in form_data)):
+            stop_loss_errors = self.validate_stop_loss_options(form_data)
+            errors.update(stop_loss_errors)
+
         return errors
 
     def is_form_valid(self, form_data: Dict[str, Any]) -> bool:
@@ -262,6 +292,14 @@ class EnhancedFormValidationService(FormValidationInterface):
             required_fields = base_fields + ['level', 'entry_price', 'stop_loss_price']
         elif risk_method == 'options':
             required_fields = base_fields + ['premium', 'contract_multiplier']
+        elif risk_method == 'options_percentage':
+            required_fields = base_fields + ['risk_percentage', 'option_premium']
+        elif risk_method == 'options_fixed_amount':
+            required_fields = base_fields + ['fixed_risk_amount', 'option_premium']
+        elif risk_method == 'options_level_based':
+            required_fields = base_fields + ['support_level', 'resistance_level', 'option_premium', 'trade_direction']
+        elif risk_method == 'options_with_stop_loss':
+            required_fields = base_fields + ['option_premium', 'entry_price', 'stop_loss_price']
         elif risk_method == 'futures':
             required_fields = base_fields + ['fixed_risk_amount', 'tick_value', 'ticks_at_risk']
         else:
@@ -283,6 +321,66 @@ class EnhancedFormValidationService(FormValidationInterface):
             risk_method: Risk calculation method
         """
         self._current_risk_method = risk_method
+
+    def validate_level_based_options(self, form_data: Dict[str, Any]) -> Dict[str, str]:
+        """
+        Validate level-based options trading specific business logic.
+
+        Args:
+            form_data: Dictionary containing form field values
+
+        Returns:
+            Dictionary of field_name -> error_message for any validation errors
+        """
+        errors = {}
+
+        # Check if we have the required level-based fields
+        if ('support_level' in form_data and 'resistance_level' in form_data and
+            form_data['support_level'] and form_data['resistance_level']):
+            try:
+                support = Decimal(str(form_data['support_level']))
+                resistance = Decimal(str(form_data['resistance_level']))
+
+                if support >= resistance:
+                    errors['support_level'] = "Support level must be less than resistance level"
+            except (ValueError, InvalidOperation):
+                pass  # Individual field validation will catch number format errors
+
+        return errors
+
+    def validate_stop_loss_options(self, form_data: Dict[str, Any]) -> Dict[str, str]:
+        """
+        Validate stop loss options trading business logic.
+
+        Args:
+            form_data: Dictionary containing form field values
+
+        Returns:
+            Dictionary of field_name -> error_message for any validation errors
+        """
+        errors = {}
+
+        # Check stop loss vs entry price relationship
+        if ('entry_price' in form_data and 'stop_loss_price' in form_data and
+            form_data['entry_price'] and form_data['stop_loss_price']):
+            try:
+                entry = Decimal(str(form_data['entry_price']))
+                stop_loss = Decimal(str(form_data['stop_loss_price']))
+
+                if entry == stop_loss:
+                    errors['stop_loss_price'] = "Stop loss price cannot equal entry price"
+
+                # Business logic for call/put options
+                trade_direction = form_data.get('trade_direction', 'call').lower()
+                if trade_direction == 'call' and stop_loss > entry:
+                    errors['stop_loss_price'] = "Stop loss should typically be below entry price for call options"
+                elif trade_direction == 'put' and stop_loss < entry:
+                    errors['stop_loss_price'] = "Stop loss should typically be above entry price for put options"
+
+            except (ValueError, InvalidOperation):
+                pass  # Individual field validation will catch number format errors
+
+        return errors
 
     def _validate_field_type(self, field_name: str, value: str, field_type: str) -> Optional[str]:
         """
@@ -316,6 +414,21 @@ class EnhancedFormValidationService(FormValidationInterface):
         elif field_type == 'decimal':
             if not self._validation_patterns['decimal'].match(value) and not self._validation_patterns['integer'].match(value):
                 return f"{self._format_field_name(field_name)} must be a decimal number"
+
+        elif field_type == 'choice':
+            # Handle choice validation based on field rules
+            field_rules = self._field_rules.get(field_name, {})
+            choices = field_rules.get('choices', [])
+            case_insensitive = field_rules.get('case_insensitive', False)
+
+            if case_insensitive:
+                value_lower = value.lower()
+                choices_lower = [choice.lower() for choice in choices]
+                if value_lower not in choices_lower:
+                    return f"{self._format_field_name(field_name)} must be one of: {', '.join(choices)}"
+            else:
+                if value not in choices:
+                    return f"{self._format_field_name(field_name)} must be one of: {', '.join(choices)}"
 
         return None
 

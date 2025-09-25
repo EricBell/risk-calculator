@@ -278,8 +278,12 @@ class RiskCalculationService(OptionsLevelBasedInterface, OptionsStopLossInterfac
             # Calculate cost per contract (assuming 100 multiplier)
             cost_per_contract = option_premium * Decimal('100')
 
-            # Calculate contracts
-            contracts = int((risk_amount / cost_per_contract).quantize(Decimal('1'), rounding=ROUND_DOWN))
+            # Calculate contracts - ensure at least 1 contract when calculation > 0
+            contracts_decimal = risk_amount / cost_per_contract
+            if contracts_decimal > 0:
+                contracts = max(1, int(contracts_decimal.quantize(Decimal('1'), rounding=ROUND_DOWN)))
+            else:
+                contracts = 0
             premium_cost = Decimal(str(contracts)) * cost_per_contract
             level_range = resistance_level - support_level
             risk_percentage = (premium_cost / account_size) * Decimal('100')
@@ -313,22 +317,40 @@ class RiskCalculationService(OptionsLevelBasedInterface, OptionsStopLossInterfac
                 errors[field] = f"{field.replace('_', ' ').title()} is required"
                 continue
 
+            # Handle empty strings and None values
+            field_value = form_data[field]
+            if field_value in [None, '', 'None', 'null']:
+                errors[field] = f"{field.replace('_', ' ').title()} is required"
+                continue
+
             try:
-                value = Decimal(str(form_data[field]))
+                # Try to convert to string first, then to Decimal
+                value_str = str(field_value).strip()
+                if not value_str or value_str.lower() in ['none', 'null', '']:
+                    errors[field] = f"{field.replace('_', ' ').title()} is required"
+                    continue
+
+                value = Decimal(value_str)
                 if value <= 0:
                     errors[field] = f"{field.replace('_', ' ').title()} must be positive"
-            except (ValueError, TypeError):
+            except (ValueError, TypeError, Exception):
                 errors[field] = f"{field.replace('_', ' ').title()} must be a valid number"
 
-        # Validate support < resistance
-        if 'support_level' in form_data and 'resistance_level' in form_data:
+        # Validate support < resistance (only if both are valid numbers)
+        if ('support_level' in form_data and 'resistance_level' in form_data and
+            form_data['support_level'] and form_data['resistance_level'] and
+            'support_level' not in errors and 'resistance_level' not in errors):
             try:
-                support = Decimal(str(form_data['support_level']))
-                resistance = Decimal(str(form_data['resistance_level']))
+                support_str = str(form_data['support_level']).strip()
+                resistance_str = str(form_data['resistance_level']).strip()
+
+                support = Decimal(support_str)
+                resistance = Decimal(resistance_str)
+
                 if support >= resistance:
                     errors['support_level'] = "Support level must be less than resistance level"
-            except (ValueError, TypeError):
-                pass  # Already handled above
+            except (ValueError, TypeError, Exception):
+                pass  # Already handled above in individual field validation
 
         return errors
 
@@ -368,8 +390,12 @@ class RiskCalculationService(OptionsLevelBasedInterface, OptionsStopLossInterfac
             # Calculate cost per contract
             cost_per_contract = option_premium * Decimal('100')
 
-            # Calculate contracts based on premium cost
-            contracts = int((risk_amount / cost_per_contract).quantize(Decimal('1'), rounding=ROUND_DOWN))
+            # Calculate contracts based on premium cost - ensure at least 1 when calculation > 0
+            contracts_decimal = risk_amount / cost_per_contract
+            if contracts_decimal > 0:
+                contracts = max(1, int(contracts_decimal.quantize(Decimal('1'), rounding=ROUND_DOWN)))
+            else:
+                contracts = 0
             premium_cost = Decimal(str(contracts)) * cost_per_contract
 
             # Calculate stop loss risk (simplified - premium is max loss for long options)
@@ -414,12 +440,21 @@ class RiskCalculationService(OptionsLevelBasedInterface, OptionsStopLossInterfac
                 if stop_loss <= 0:
                     errors['stop_loss_price'] = "Stop loss price must be positive"
 
-                # Check relationship with entry price
+                # Check relationship with entry price - include business logic validation
                 if 'entry_price' in form_data and form_data['entry_price']:
                     try:
                         entry_price = Decimal(str(form_data['entry_price']))
                         if stop_loss == entry_price:
                             errors['stop_loss_price'] = "Stop loss price cannot equal entry price"
+
+                        # Business logic: For most option strategies, stop loss should be conservative
+                        # Default to call option behavior if trade_direction not specified
+                        trade_direction = form_data.get('trade_direction', 'call').lower()
+                        if trade_direction in ['call', ''] and stop_loss > entry_price:
+                            errors['stop_loss_price'] = "Stop loss should typically be below entry price for call options"
+                        elif trade_direction == 'put' and stop_loss < entry_price:
+                            errors['stop_loss_price'] = "Stop loss should typically be above entry price for put options"
+
                     except (ValueError, TypeError):
                         pass
             except (ValueError, TypeError):
