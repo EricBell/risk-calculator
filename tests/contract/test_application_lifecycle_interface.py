@@ -76,9 +76,10 @@ class TestApplicationLifecycleInterface:
                     mock_app_instance.exec.return_value = 0
 
                     # Mock Qt application creation and execution
-                    with patch('risk_calculator.qt_main.setup_logging'), \
-                         patch('risk_calculator.qt_main.create_application'), \
-                         patch('risk_calculator.qt_main.run_application'):
+                    with patch('risk_calculator.qt_main.RiskCalculatorQtApp') as mock_app_cls:
+                        mock_qt_app_instance = Mock()
+                        mock_qt_app_instance.run.return_value = 0
+                        mock_app_cls.return_value = mock_qt_app_instance
 
                         # Test interface exists (don't actually run)
                         # This verifies the function can be called without hanging
