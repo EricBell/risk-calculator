@@ -37,15 +37,17 @@ class TestTkinterDeprecationInterface:
                 # Should have main function that issues deprecation warning
                 assert hasattr(main_tkinter_deprecated, 'main'), "Should have main() function"
 
-                # Test calling main captures deprecation warning
+                # Test calling main captures deprecation warning (with comprehensive mocking)
                 with patch('sys.exit') as mock_exit:
                     with patch('builtins.print') as mock_print:
-                        try:
-                            main_tkinter_deprecated.main()
-                        except SystemExit:
-                            pass  # Expected for main() functions
-                        except Exception:
-                            pass  # May fail due to missing display, but warning should still be issued
+                        with patch('tkinter.Tk'):  # Mock tkinter to prevent GUI launch
+                            with patch('risk_calculator.main_tkinter_deprecated.run_application'):
+                                try:
+                                    main_tkinter_deprecated.main()
+                                except SystemExit:
+                                    pass  # Expected for main() functions
+                                except (ImportError, AttributeError):
+                                    pass  # May fail due to missing display or mocked functions
 
                 # Should have issued deprecation warning
                 deprecation_warnings = [w for w in warning_list if issubclass(w.category, DeprecationWarning)]
@@ -110,28 +112,30 @@ class TestTkinterDeprecationInterface:
         """Test that deprecation warnings are visible to users."""
         with patch('builtins.print') as mock_print:
             with patch('sys.exit') as mock_exit:
-                try:
-                    from risk_calculator import main_tkinter_deprecated
+                with patch('tkinter.Tk'):  # Mock tkinter to prevent GUI launch
+                    with patch('risk_calculator.main_tkinter_deprecated.run_application'):
+                        try:
+                            from risk_calculator import main_tkinter_deprecated
 
-                    # Try to call main to trigger warning output
-                    try:
-                        main_tkinter_deprecated.main()
-                    except SystemExit:
-                        pass
-                    except Exception:
-                        pass  # May fail in headless environment
+                            # Try to call main to trigger warning output
+                            try:
+                                main_tkinter_deprecated.main()
+                            except SystemExit:
+                                pass
+                            except (ImportError, AttributeError):
+                                pass  # May fail due to mocked functions
 
-                    # Should have printed deprecation message to user
-                    if mock_print.called:
-                        printed_messages = [str(call) for call in mock_print.call_args_list]
-                        deprecation_message_found = any(
-                            "deprecat" in msg.lower() for msg in printed_messages
-                        )
-                        # Note: This is a soft check since the exact implementation may vary
-                        # The important thing is that some user-visible output occurs
+                            # Should have printed deprecation message to user
+                            if mock_print.called:
+                                printed_messages = [str(call) for call in mock_print.call_args_list]
+                                deprecation_message_found = any(
+                                    "deprecat" in msg.lower() for msg in printed_messages
+                                )
+                                # Note: This is a soft check since the exact implementation may vary
+                                # The important thing is that some user-visible output occurs
 
-                except ImportError:
-                    pytest.fail("Should be able to test deprecation warning visibility")
+                        except ImportError:
+                            pytest.fail("Should be able to test deprecation warning visibility")
 
     def test_python_version_compatibility_interface(self):
         """Test that deprecation interface works across Python versions."""
@@ -153,26 +157,28 @@ class TestTkinterDeprecationInterface:
     def test_graceful_fallback_interface(self):
         """Test that deprecated version fails gracefully if needed."""
         with patch('sys.exit') as mock_exit:
-            try:
-                from risk_calculator import main_tkinter_deprecated
+            with patch('tkinter.Tk'):  # Mock tkinter to prevent GUI launch
+                with patch('risk_calculator.main_tkinter_deprecated.run_application'):
+                    try:
+                        from risk_calculator import main_tkinter_deprecated
 
-                # Should have error handling for missing dependencies
-                # This tests the interface exists, not full functionality
-                assert hasattr(main_tkinter_deprecated, 'main'), "Should have main function"
+                        # Should have error handling for missing dependencies
+                        # This tests the interface exists, not full functionality
+                        assert hasattr(main_tkinter_deprecated, 'main'), "Should have main function"
 
-                # Should be able to call without crashing the test
-                try:
-                    main_tkinter_deprecated.main()
-                except SystemExit:
-                    pass  # Expected behavior
-                except ImportError as e:
-                    # May not have tkinter in test environment
-                    assert "tkinter" in str(e).lower(), f"Should fail gracefully with tkinter error: {e}"
-                except Exception:
-                    pass  # Other errors acceptable in test environment
+                        # Should be able to call without crashing the test
+                        try:
+                            main_tkinter_deprecated.main()
+                        except SystemExit:
+                            pass  # Expected behavior
+                        except ImportError as e:
+                            # May not have tkinter in test environment
+                            assert "tkinter" in str(e).lower(), f"Should fail gracefully with tkinter error: {e}"
+                        except (AttributeError, Exception):
+                            pass  # Other errors acceptable in test environment with mocking
 
-            except ImportError:
-                pytest.fail("Should be able to import deprecated module")
+                    except ImportError:
+                        pytest.fail("Should be able to import deprecated module")
 
     def test_migration_guidance_interface(self):
         """Test that clear migration guidance is provided."""
