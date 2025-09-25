@@ -1,4 +1,4 @@
-# Claude Code Context: Risk Calculator
+/# Claude Code Context: Risk Calculator
 
 ## Project Overview
 Cross-platform desktop application for daytrading risk calculation using Python and Qt. Migrated from Tkinter to Qt framework for enhanced UI capabilities, high-DPI support, and responsive window management. Runs on Windows and Linux with professional-grade user interface.
