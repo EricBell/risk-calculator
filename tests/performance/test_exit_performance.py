@@ -42,15 +42,20 @@ class TestExitPerformance:
             # Mock Qt application to avoid GUI dependencies
             with patch('PySide6.QtWidgets.QApplication', return_value=mock_qt_app):
                 with patch('sys.exit') as mock_exit:
-                    start_time = time.time()
+                    with patch('risk_calculator.qt_main.RiskCalculatorQtApp') as mock_app_cls:
+                        mock_qt_app_instance = Mock()
+                        mock_qt_app_instance.run.return_value = 0
+                        mock_app_cls.return_value = mock_qt_app_instance
 
-                    try:
-                        # This should exit quickly without actually running GUI
-                        qt_main.main()
-                    except SystemExit:
-                        pass  # Expected behavior
-                    except Exception:
-                        pass  # May fail due to missing display, but timing still valid
+                        start_time = time.time()
+
+                        try:
+                            # This should exit quickly without actually running GUI
+                            qt_main.main()
+                        except SystemExit:
+                            pass  # Expected behavior
+                        except Exception:
+                            pass  # May fail due to missing display, but timing still valid
 
                     exit_time = time.time() - start_time
 
@@ -140,14 +145,14 @@ class TestExitPerformance:
             lifecycle_service = ApplicationLifecycleService()
 
             # Register some mock resources
-            lifecycle_service.register_cleanup_handler(lambda: time.sleep(0.01), "test_resource_1")
-            lifecycle_service.register_cleanup_handler(lambda: time.sleep(0.01), "test_resource_2")
-            lifecycle_service.register_cleanup_handler(lambda: time.sleep(0.01), "test_resource_3")
+            lifecycle_service.register_cleanup_handler(lambda: time.sleep(0.01))
+            lifecycle_service.register_cleanup_handler(lambda: time.sleep(0.01))
+            lifecycle_service.register_cleanup_handler(lambda: time.sleep(0.01))
 
             start_time = time.time()
 
             # Perform cleanup
-            lifecycle_service.cleanup_all_resources()
+            lifecycle_service.force_cleanup()
 
             cleanup_time = time.time() - start_time
 

@@ -14,6 +14,7 @@ from decimal import Decimal
 # Add the risk_calculator package to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+from risk_calculator.models.button_state import ButtonState
 
 class TestRiskMethodSwitchingIntegration:
     """Integration tests for risk method switching functionality."""
@@ -68,10 +69,10 @@ class TestRiskMethodSwitchingIntegration:
             })
 
             # Should validate percentage method
-            result = controller.validation_service.validate_form_data(
-                mock_tab.get_form_data(), 'equity'
+            errors = controller.validation_service.validate_form(
+                mock_tab.get_form_data()
             )
-            assert 'risk_percentage' not in result.get('errors', {}), "Percentage method should be valid"
+            assert 'risk_percentage' not in errors, "Percentage method should be valid"
 
             # Switch to fixed amount method
             mock_tab.get_form_data.return_value.update({
@@ -80,11 +81,11 @@ class TestRiskMethodSwitchingIntegration:
                 'fixed_risk_amount': '200'
             })
 
-            result = controller.validation_service.validate_form_data(
-                mock_tab.get_form_data(), 'equity'
+            errors = controller.validation_service.validate_form(
+                mock_tab.get_form_data()
             )
-            assert 'fixed_risk_amount' not in result.get('errors', {}), "Fixed amount method should be valid"
-            assert 'risk_percentage' not in result.get('errors', {}), "Risk percentage should not be required"
+            assert 'fixed_risk_amount' not in errors, "Fixed amount method should be valid"
+            assert 'risk_percentage' not in errors, "Risk percentage should not be required"
 
         except ImportError:
             pytest.skip("Qt equity controller or validation service not available")
@@ -114,10 +115,9 @@ class TestRiskMethodSwitchingIntegration:
                 'stop_loss_price': '0.65'  # Required for options
             }
 
-            result = controller.validation_service.validate_form_data(
-                mock_tab.get_form_data(), 'options'
+            errors = controller.validation_service.validate_form(
+                mock_tab.get_form_data()
             )
-            errors = result.get('errors', {})
             assert 'stop_loss_price' not in errors, "Stop loss price should be valid"
             assert 'risk_percentage' not in errors, "Risk percentage should be valid"
 
@@ -129,10 +129,9 @@ class TestRiskMethodSwitchingIntegration:
                 'stop_loss_price': '0.65'  # Still required
             })
 
-            result = controller.validation_service.validate_form_data(
-                mock_tab.get_form_data(), 'options'
+            errors = controller.validation_service.validate_form(
+                mock_tab.get_form_data()
             )
-            errors = result.get('errors', {})
             assert 'fixed_risk_amount' not in errors, "Fixed amount should be valid"
             assert 'stop_loss_price' not in errors, "Stop loss still required for fixed amount"
 
@@ -146,10 +145,9 @@ class TestRiskMethodSwitchingIntegration:
                 'trade_direction': 'call'
             })
 
-            result = controller.validation_service.validate_form_data(
-                mock_tab.get_form_data(), 'options'
+            errors = controller.validation_service.validate_form(
+                mock_tab.get_form_data()
             )
-            errors = result.get('errors', {})
             assert 'support_level' not in errors, "Support level should be valid"
             assert 'resistance_level' not in errors, "Resistance level should be valid"
 
@@ -182,10 +180,9 @@ class TestRiskMethodSwitchingIntegration:
                 'stop_loss_price': '4450.00'
             }
 
-            result = controller.validation_service.validate_form_data(
-                mock_tab.get_form_data(), 'futures'
+            errors = controller.validation_service.validate_form(
+                mock_tab.get_form_data()
             )
-            errors = result.get('errors', {})
             assert len(errors) == 0 or 'risk_percentage' not in errors, "Percentage method should validate"
 
             # Switch to level-based method
@@ -197,10 +194,9 @@ class TestRiskMethodSwitchingIntegration:
                 'resistance_level': '4600.00'
             })
 
-            result = controller.validation_service.validate_form_data(
-                mock_tab.get_form_data(), 'futures'
+            errors = controller.validation_service.validate_form(
+                mock_tab.get_form_data()
             )
-            errors = result.get('errors', {})
             assert 'support_level' not in errors, "Support level should be valid"
             assert 'resistance_level' not in errors, "Resistance level should be valid"
 
@@ -253,10 +249,9 @@ class TestRiskMethodSwitchingIntegration:
 
             # Test that percentage method validation is consistent
             for scenario in test_scenarios:
-                result = validation_service.validate_form_data(
-                    scenario['form_data'], scenario['asset_type']
+                errors = validation_service.validate_form(
+                    scenario['form_data']
                 )
-                errors = result.get('errors', {})
 
                 # Risk percentage should be handled consistently
                 if 'risk_percentage' in errors:
@@ -283,11 +278,11 @@ class TestRiskMethodSwitchingIntegration:
                 'risk_percentage': ''  # Missing required field
             }
 
-            button_state = button_service.get_button_state(incomplete_percentage_data, 'equity')
+            button_state = button_service.get_button_state(incomplete_percentage_data, 'percentage')
 
-            assert button_state.enabled is False, "Button should be disabled with incomplete percentage data"
-            assert "risk_percentage" in button_state.error_message.lower() or "percentage" in button_state.error_message.lower(), \
-                "Error message should mention missing percentage"
+            assert button_state == ButtonState.DISABLED, "Button should be disabled with incomplete percentage data"
+            # Test that the button is disabled due to missing percentage field
+            # (Error messages are handled separately by the validation service)"
 
             # Complete the percentage data
             complete_percentage_data = {
@@ -298,12 +293,10 @@ class TestRiskMethodSwitchingIntegration:
                 'risk_percentage': '2.0'
             }
 
-            button_state = button_service.get_button_state(complete_percentage_data, 'equity')
+            button_state = button_service.get_button_state(complete_percentage_data, 'percentage')
 
-            # Button should now be enabled (or provide specific error if validation fails)
-            if not button_state.enabled:
-                # If still disabled, error message should be specific
-                assert len(button_state.error_message) > 0, "Should provide clear error message when disabled"
+            # Button should now be enabled with complete valid data
+            assert button_state == ButtonState.ENABLED, "Button should be enabled with complete percentage data"
 
         except ImportError:
             pytest.skip("Button state service not available")
@@ -339,8 +332,9 @@ class TestRiskMethodSwitchingIntegration:
                 method = methods[i % len(methods)]
                 form_data = {**base_data, 'risk_method': method, **method_data[method]}
 
-                result = validation_service.validate_form_data(form_data, 'equity')
-                assert isinstance(result, dict), f"Validation should return dict for method {method}"
+                validation_service.set_risk_method(method)
+                errors = validation_service.validate_form(form_data)
+                assert isinstance(errors, dict), f"Validation should return dict for method {method}"
 
             elapsed_time = time.time() - start_time
 
@@ -364,8 +358,9 @@ class TestRiskMethodSwitchingIntegration:
                 'risk_percentage': 'also_invalid'
             }
 
-            result = validation_service.validate_form_data(invalid_data, 'equity')
-            assert len(result.get('errors', {})) > 0, "Should have validation errors"
+            validation_service.set_risk_method('percentage')
+            errors = validation_service.validate_form(invalid_data)
+            assert len(errors) > 0, "Should have validation errors"
 
             # Switch to fixed amount method with valid data
             valid_fixed_data = {
@@ -376,8 +371,8 @@ class TestRiskMethodSwitchingIntegration:
                 'fixed_risk_amount': '200'
             }
 
-            result = validation_service.validate_form_data(valid_fixed_data, 'equity')
-            errors = result.get('errors', {})
+            validation_service.set_risk_method('fixed_amount')
+            errors = validation_service.validate_form(valid_fixed_data)
 
             # Should recover from previous errors
             assert 'account_size' not in errors, "Account size should be valid now"
