@@ -117,13 +117,15 @@ class TestTkinterDeprecationInterface:
                         try:
                             from risk_calculator import main_tkinter_deprecated
 
-                            # Try to call main to trigger warning output
-                            try:
-                                main_tkinter_deprecated.main()
-                            except SystemExit:
-                                pass
-                            except (ImportError, AttributeError):
-                                pass  # May fail due to mocked functions
+                            # Try to call main to trigger warning output (suppress warnings in test environment)
+                            with warnings.catch_warnings():
+                                warnings.simplefilter("ignore", DeprecationWarning)
+                                try:
+                                    main_tkinter_deprecated.main()
+                                except SystemExit:
+                                    pass
+                                except (ImportError, AttributeError):
+                                    pass  # May fail due to mocked functions
 
                             # Should have printed deprecation message to user
                             if mock_print.called:
@@ -166,16 +168,18 @@ class TestTkinterDeprecationInterface:
                         # This tests the interface exists, not full functionality
                         assert hasattr(main_tkinter_deprecated, 'main'), "Should have main function"
 
-                        # Should be able to call without crashing the test
-                        try:
-                            main_tkinter_deprecated.main()
-                        except SystemExit:
-                            pass  # Expected behavior
-                        except ImportError as e:
-                            # May not have tkinter in test environment
-                            assert "tkinter" in str(e).lower(), f"Should fail gracefully with tkinter error: {e}"
-                        except (AttributeError, Exception):
-                            pass  # Other errors acceptable in test environment with mocking
+                        # Should be able to call without crashing the test (suppress warnings in test environment)
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore", DeprecationWarning)
+                            try:
+                                main_tkinter_deprecated.main()
+                            except SystemExit:
+                                pass  # Expected behavior
+                            except ImportError as e:
+                                # May not have tkinter in test environment
+                                assert "tkinter" in str(e).lower(), f"Should fail gracefully with tkinter error: {e}"
+                            except (AttributeError, Exception):
+                                pass  # Other errors acceptable in test environment with mocking
 
                     except ImportError:
                         pytest.fail("Should be able to import deprecated module")
