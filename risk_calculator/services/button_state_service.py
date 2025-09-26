@@ -80,7 +80,7 @@ class ButtonStateService:
 
         # Get validation errors
         errors = self.validation_service.validate_form(form_data)
-        required_fields = self.validation_service.get_required_fields(risk_method)
+        required_fields = self.validation_service.get_required_fields(risk_method, form_data)
 
         # Generate appropriate tooltip based on errors
         if len(errors) == 0:
@@ -205,7 +205,7 @@ class ButtonStateService:
         """
         self.validation_service.set_risk_method(risk_method)
         errors = self.validation_service.validate_form(form_data)
-        required_fields = self.validation_service.get_required_fields(risk_method)
+        required_fields = self.validation_service.get_required_fields(risk_method, form_data)
 
         # Check for missing required fields
         missing_fields = []

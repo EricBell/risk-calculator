@@ -75,6 +75,14 @@ class QtEquityTab(QtBaseView):
         self.validation_timer.timeout.connect(self._perform_validation)
         self.validation_delay_ms = 300  # 300ms debounce
 
+        # Setup field connections and validation after UI is created
+        self.setup_input_fields()
+        self.setup_result_display()
+        self.setup_risk_method_selection()
+
+        # Force initial validation and button state update
+        QTimer.singleShot(100, self._perform_validation)
+
     def setup_ui(self) -> None:
         """Setup the equity tab UI components."""
         main_layout = self.create_main_layout()
@@ -356,6 +364,10 @@ class QtEquityTab(QtBaseView):
                 field_widget.textChanged.connect(self._on_field_changed)
                 # Also connect editing finished for immediate validation
                 field_widget.editingFinished.connect(self._perform_validation)
+                # Connect focus out for immediate validation
+                field_widget.focusOutEvent = lambda event, orig=field_widget.focusOutEvent: (
+                    orig(event), self._perform_validation()
+                )
 
         # Connect risk method change to validation
         if self.risk_method_combo:
@@ -608,7 +620,7 @@ class QtEquityTab(QtBaseView):
             self._update_field_styling(errors)
 
         except Exception as e:
-            # Silently handle validation errors to prevent UI crashes
+            # Handle validation errors to prevent UI crashes
             print(f"Validation error in equity tab: {e}")
 
     def _update_error_displays(self, errors: Dict[str, str]) -> None:

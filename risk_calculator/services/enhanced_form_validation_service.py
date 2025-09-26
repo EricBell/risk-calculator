@@ -103,6 +103,13 @@ class EnhancedFormValidationService(FormValidationInterface):
                 'max_value': 1000000,
                 'decimal_places': 4
             },
+            'stop_loss_price_fixed': {
+                'required': True,
+                'type': 'positive_numeric',
+                'min_value': 0.01,
+                'max_value': 1000000,
+                'decimal_places': 4
+            },
             'premium': {
                 'required': True,
                 'type': 'positive_numeric',
@@ -156,6 +163,32 @@ class EnhancedFormValidationService(FormValidationInterface):
                 'type': 'integer',
                 'min_value': 1,
                 'max_value': 10000
+            },
+            'symbol': {
+                'required': True,
+                'type': 'text',
+                'min_length': 1,
+                'max_length': 10
+            },
+            'support_resistance_level': {
+                'required': True,
+                'type': 'positive_numeric',
+                'min_value': 0.01,
+                'max_value': 1000000,
+                'decimal_places': 4
+            },
+            'option_symbol': {
+                'required': True,
+                'type': 'text',
+                'min_length': 1,
+                'max_length': 30
+            },
+            'option_premium': {
+                'required': True,
+                'type': 'positive_numeric',
+                'min_value': 0.01,
+                'max_value': 10000,
+                'decimal_places': 4
             }
         }
 
@@ -224,7 +257,7 @@ class EnhancedFormValidationService(FormValidationInterface):
         errors = {}
 
         # Get required fields for current risk method
-        required_fields = self.get_required_fields(self._current_risk_method)
+        required_fields = self.get_required_fields(self._current_risk_method, form_data)
 
         # Only validate required fields for current risk method
         for required_field in required_fields:
@@ -268,28 +301,47 @@ class EnhancedFormValidationService(FormValidationInterface):
         errors = self.validate_form(form_data)
         return len(errors) == 0
 
-    def get_required_fields(self, risk_method: str) -> List[str]:
+    def get_required_fields(self, risk_method: str, form_data: Dict[str, Any] = None) -> List[str]:
         """
         Get list of required fields for a specific risk method.
 
         Args:
-            risk_method: Risk calculation method ('percentage', 'fixed_amount', 'level')
+            risk_method: Risk calculation method ('percentage', 'fixed_amount', 'level_based')
+            form_data: Optional form data to determine trade type
 
         Returns:
             List of required field names
         """
-        # Cache required fields to avoid recalculation
-        if risk_method in self._cached_required_fields:
-            return self._cached_required_fields[risk_method]
+        # Create a cache key that includes trade type detection
+        is_options = self._is_options_trade(form_data) if form_data else False
+        cache_key = f"{risk_method}_{is_options}"
 
-        base_fields = ['account_size']
+        # Cache required fields to avoid recalculation
+        if cache_key in self._cached_required_fields:
+            return self._cached_required_fields[cache_key]
+
+        # Determine base fields based on trade type
+        if is_options:
+            base_fields = ['account_size', 'option_symbol', 'premium', 'contract_multiplier']
+        else:
+            # Equity trading
+            base_fields = ['account_size', 'symbol', 'entry_price']
 
         if risk_method == 'percentage':
-            required_fields = base_fields + ['risk_percentage', 'entry_price', 'stop_loss_price']
+            if is_options:
+                required_fields = base_fields + ['risk_percentage', 'stop_loss_price']
+            else:
+                required_fields = base_fields + ['risk_percentage', 'stop_loss_price']
         elif risk_method == 'fixed_amount':
-            required_fields = base_fields + ['fixed_risk_amount', 'entry_price', 'stop_loss_price']
-        elif risk_method == 'level':
-            required_fields = base_fields + ['level', 'entry_price', 'stop_loss_price']
+            if is_options:
+                required_fields = base_fields + ['fixed_risk_amount', 'stop_loss_price']
+            else:
+                required_fields = base_fields + ['fixed_risk_amount', 'stop_loss_price_fixed']
+        elif risk_method == 'level_based':
+            if is_options:
+                required_fields = base_fields + ['support_level', 'resistance_level', 'trade_direction']
+            else:
+                required_fields = base_fields + ['support_resistance_level']
         elif risk_method == 'options':
             required_fields = base_fields + ['premium', 'contract_multiplier', 'stop_loss_price']
         elif risk_method == 'options_percentage':
@@ -305,8 +357,36 @@ class EnhancedFormValidationService(FormValidationInterface):
         else:
             required_fields = base_fields
 
-        self._cached_required_fields[risk_method] = required_fields
+        self._cached_required_fields[cache_key] = required_fields
         return required_fields
+
+    def _is_options_trade(self, form_data: Dict[str, Any]) -> bool:
+        """
+        Determine if this is an options trade based on form data.
+
+        Args:
+            form_data: Dictionary of field names to values
+
+        Returns:
+            True if this appears to be an options trade, False otherwise
+        """
+        if not form_data:
+            return False
+
+        # Check for options-specific fields
+        options_indicators = [
+            'option_symbol',
+            'premium',
+            'contract_multiplier',
+            'support_level',
+            'resistance_level'
+        ]
+
+        for indicator in options_indicators:
+            if indicator in form_data and form_data.get(indicator):
+                return True
+
+        return False
 
     def clear_validation_errors(self) -> None:
         """Clear all stored validation errors."""
@@ -429,6 +509,17 @@ class EnhancedFormValidationService(FormValidationInterface):
             else:
                 if value not in choices:
                     return f"{self._format_field_name(field_name)} must be one of: {', '.join(choices)}"
+
+        elif field_type == 'text':
+            # Handle text field validation
+            field_rules = self._field_rules.get(field_name, {})
+            min_length = field_rules.get('min_length', 0)
+            max_length = field_rules.get('max_length', 1000)
+
+            if len(value) < min_length:
+                return f"{self._format_field_name(field_name)} must be at least {min_length} character(s)"
+            if len(value) > max_length:
+                return f"{self._format_field_name(field_name)} cannot exceed {max_length} characters"
 
         return None
 
@@ -591,6 +682,15 @@ class EnhancedFormValidationService(FormValidationInterface):
             'level': 'Level',
             'entry_price': 'Entry Price',
             'stop_loss_price': 'Stop Loss Price',
+            'stop_loss_price_fixed': 'Stop Loss Price',
+            'support_resistance_level': 'Support/Resistance Level',
+            'symbol': 'Stock Symbol',
+            'option_symbol': 'Option Symbol',
+            'premium': 'Premium',
+            'contract_multiplier': 'Contract Multiplier',
+            'support_level': 'Support Level',
+            'resistance_level': 'Resistance Level',
+            'trade_direction': 'Trade Direction',
             'option_premium': 'Option Premium',
             'tick_value': 'Tick Value',
             'ticks_at_risk': 'Ticks at Risk'

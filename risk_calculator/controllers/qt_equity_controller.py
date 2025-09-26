@@ -57,7 +57,7 @@ class QtEquityController(QtBaseController):
 
     def get_required_fields(self) -> List[str]:
         """Return list of required fields based on current risk method."""
-        base_fields = ['account_size', 'symbol', 'entry_price', 'trade_direction']
+        base_fields = ['account_size', 'symbol', 'entry_price']
 
         if self.current_risk_method == RiskMethod.PERCENTAGE:
             return base_fields + ['risk_percentage', 'stop_loss_price']

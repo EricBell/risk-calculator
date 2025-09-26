@@ -74,6 +74,14 @@ class QtOptionsTab(QtBaseView):
         self.validation_timer.timeout.connect(self._perform_validation)
         self.validation_delay_ms = 300  # 300ms debounce
 
+        # Setup field connections and validation after UI is created
+        self.setup_input_fields()
+        self.setup_result_display()
+        self.setup_risk_method_selection()
+
+        # Force initial validation and button state update
+        QTimer.singleShot(100, self._perform_validation)
+
     def setup_ui(self) -> None:
         """Setup the options tab UI components."""
         main_layout = self.create_main_layout()
@@ -416,6 +424,10 @@ class QtOptionsTab(QtBaseView):
                 field_widget.textChanged.connect(self._on_field_changed)
                 # Also connect editing finished for immediate validation
                 field_widget.editingFinished.connect(self._perform_validation)
+                # Connect focus out for immediate validation
+                field_widget.focusOutEvent = lambda event, orig=field_widget.focusOutEvent: (
+                    orig(event), self._perform_validation()
+                )
 
         # Connect risk method change to validation
         if self.risk_method_combo:
@@ -426,7 +438,7 @@ class QtOptionsTab(QtBaseView):
             self.direction_group.buttonClicked.connect(self._perform_validation)
 
         # Setup initial validation state
-        self.validation_service.set_risk_method("options")  # Options use special method
+        self.validation_service.set_risk_method(self.current_method.value)
         self._perform_validation()
 
     def setup_result_display(self) -> None:
