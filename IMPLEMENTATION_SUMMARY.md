@@ -174,27 +174,53 @@ All 5 quickstart scenarios from specification:
 
 ## 🚀 Launch Instructions
 
-### Quick Start
+### Quick Start with UV (Recommended)
 ```bash
 # Navigate to project directory
 cd risk-calculator
 
-# Activate virtual environment
-source .venv/bin/activate  # Linux/Mac
-# or .venv\Scripts\activate  # Windows
+# First time setup - install dependencies
+uv sync
 
 # Launch application
-python -m risk_calculator.main
+uv run python -m risk_calculator.main
+
+# Or using the installed console script
+uv run risk-calculator
 ```
 
 ### Available Commands
 ```bash
-python -m risk_calculator.main --version    # Show version info
-python -m risk_calculator.main --debug      # Debug mode
-python -m risk_calculator.main --help       # Show help
+uv run python -m risk_calculator.main --version    # Show version info
+uv run python -m risk_calculator.main --debug      # Debug mode
+uv run python -m risk_calculator.main --help       # Show help
+```
+
+### Alternative: Traditional Python
+```bash
+# If you prefer traditional venv (not recommended)
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac or .venv\Scripts\activate (Windows)
+pip install -e ".[dev]"
+python -m risk_calculator.main
 ```
 
 ## 📚 Developer Documentation
+
+### Development Setup
+```bash
+# Install UV package manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Setup development environment
+uv sync
+
+# Run tests
+uv run pytest
+
+# Run tests with coverage
+uv run pytest --cov=risk_calculator
+```
 
 ### Adding New Asset Types
 1. Create model in `models/` inheriting from `Trade`
@@ -208,6 +234,18 @@ python -m risk_calculator.main --help       # Show help
 2. Implement calculation logic in `RiskCalculationService`
 3. Add validation rules in `TradeValidationService`
 4. Update UI frames in base and specific tab classes
+
+### Dependency Management
+```bash
+# Add runtime dependency
+uv add <package-name>
+
+# Add development dependency
+uv add --dev <package-name>
+
+# Update dependencies
+uv sync --upgrade
+```
 
 ## 🎉 Project Outcome
 

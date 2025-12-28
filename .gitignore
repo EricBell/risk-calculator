@@ -1,3 +1,26 @@
+# Virtual environments
 .venv/
+
+# UV specific
+.python-version
+uv.lock
+
+# Application logs
 logs/
+
+# Python bytecode
 *.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

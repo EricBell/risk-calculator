@@ -16,6 +16,11 @@ Cross-platform desktop application for daytrading risk calculation using Python 
 - pytest-mock (mocking for tests)
 - PyInstaller (deployment packaging)
 
+## Package Management
+- **Tool**: UV (modern Python package manager)
+- **Config**: `pyproject.toml` (PEP 517/518 compliant)
+- **Lockfile**: `uv.lock` for reproducible builds
+
 ## Project Structure
 ```
 risk_calculator/
@@ -51,7 +56,53 @@ risk_calculator/
 ## Next Steps
 Ready for `/tasks` command to generate implementation tasks from design artifacts.
 
+## Developer Workflow (UV)
+
+### Initial Setup
+```bash
+# Install UV (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone repository and setup environment
+cd risk-calculator
+uv sync                    # Creates .venv and installs all dependencies
+```
+
+### Common Commands
+```bash
+# Run the application
+uv run python -m risk_calculator.main
+
+# Run tests
+uv run pytest
+
+# Run tests with coverage
+uv run pytest --cov=risk_calculator
+
+# Add a new runtime dependency
+uv add <package-name>
+
+# Add a new dev dependency
+uv add --dev <package-name>
+
+# Update all dependencies
+uv sync --upgrade
+
+# Lock dependencies without installing
+uv lock
+```
+
+### Building and Packaging
+```bash
+# Build distribution packages
+uv build
+
+# Install in editable mode for development
+uv pip install -e .
+```
+
 ## Recent Changes
+- 2025-12-28: Migrated to UV for package management with pyproject.toml
 - 2025-09-18: Updated specifications from Windows-only C#/.NET to cross-platform Python
 - 2025-09-17: Initial feature specification and planning complete
 - 2025-09-17: Architecture research and technology stack decisions
