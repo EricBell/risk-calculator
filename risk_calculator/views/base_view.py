@@ -50,7 +50,7 @@ class BaseTradingView(ABC):
     def build_risk_method_selector(self) -> ft.Control:
         """Build risk method radio button group."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             margin=ft.margin.only(bottom=10),
@@ -83,13 +83,13 @@ class BaseTradingView(ABC):
                 controls=[
                     ft.ElevatedButton(
                         "Calculate Position",
-                        icon=ft.icons.CALCULATE,
+                        icon=ft.Icons.CALCULATE,
                         ref=self.calculate_button_ref,
                         on_click=self.on_calculate_clicked
                     ),
                     ft.OutlinedButton(
                         "Clear",
-                        icon=ft.icons.CLEAR,
+                        icon=ft.Icons.CLEAR,
                         on_click=self.on_clear_clicked
                     )
                 ],
@@ -100,7 +100,7 @@ class BaseTradingView(ABC):
     def build_results_display(self) -> ft.Control:
         """Build results display area."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             expand=True,
@@ -134,7 +134,7 @@ class BaseTradingView(ABC):
         return ft.TextField(
             label=label,
             keyboard_type=keyboard_type,
-            suffix_text=suffix_text,
+            suffix=suffix_text,
             width=width,
             on_change=lambda e: self.on_field_changed(field_name, e.control.value)
         )

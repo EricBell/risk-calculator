@@ -52,10 +52,10 @@ class MainView:
             controls=[
                 # Title bar
                 ft.Container(
-                    bgcolor=ft.colors.SURFACE_VARIANT,
+                    bgcolor=ft.Colors.BLUE_GREY_100,
                     padding=ft.padding.all(15),
                     content=ft.Row([
-                        ft.Icon(ft.icons.CALCULATE, size=24),
+                        ft.Icon(ft.Icons.CALCULATE, size=24),
                         ft.Text(
                             "Risk Calculator - Daytrading Position Sizing",
                             size=18,
@@ -71,18 +71,12 @@ class MainView:
                     expand=True,
                     tabs=[
                         ft.Tab(
-                            text="Equity Trading",
-                            icon=ft.icons.SHOW_CHART,
                             content=self.equity_view.build()
                         ),
                         ft.Tab(
-                            text="Options Trading",
-                            icon=ft.icons.FUNCTIONS,
                             content=self.options_view.build()
                         ),
                         ft.Tab(
-                            text="Futures Trading",
-                            icon=ft.icons.TRENDING_UP,
                             content=self.futures_view.build()
                         ),
                     ],
@@ -90,10 +84,10 @@ class MainView:
                 ),
                 # Status bar
                 ft.Container(
-                    bgcolor=ft.colors.SURFACE_VARIANT,
+                    bgcolor=ft.Colors.BLUE_GREY_100,
                     padding=ft.padding.symmetric(horizontal=15, vertical=8),
                     content=ft.Row([
-                        ft.Icon(ft.icons.INFO_OUTLINE, size=16),
+                        ft.Icon(ft.Icons.INFO_OUTLINE, size=16),
                         ft.Text(
                             "Ready",
                             ref=self.status_text_ref,

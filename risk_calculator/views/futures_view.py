@@ -24,7 +24,7 @@ class FuturesView(BaseTradingView):
     def build_trade_parameters(self) -> ft.Control:
         """Build futures-specific input fields."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             margin=ft.margin.only(bottom=10),
@@ -35,7 +35,7 @@ class FuturesView(BaseTradingView):
                         ref=self.account_size_ref,
                         label="Account Size ($)",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         on_change=lambda e: self.on_field_changed('account_size', e.control.value)
                     ),
                     ft.TextField(
@@ -49,7 +49,7 @@ class FuturesView(BaseTradingView):
                         ref=self.entry_price_ref,
                         label="Entry Price",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         on_change=lambda e: self.on_field_changed('entry_price', e.control.value)
                     ),
                     ft.Row([
@@ -57,7 +57,7 @@ class FuturesView(BaseTradingView):
                             ref=self.tick_value_ref,
                             label="Tick Value ($)",
                             keyboard_type=ft.KeyboardType.NUMBER,
-                            prefix_text="$",
+                            prefix="$",
                             hint_text="e.g., 12.50",
                             expand=True,
                             on_change=lambda e: self.on_field_changed('tick_value', e.control.value)
@@ -75,7 +75,7 @@ class FuturesView(BaseTradingView):
                         ref=self.margin_requirement_ref,
                         label="Initial Margin Requirement",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         hint_text="Per contract",
                         on_change=lambda e: self.on_field_changed('margin_requirement', e.control.value)
                     ),
@@ -100,7 +100,7 @@ class FuturesView(BaseTradingView):
                             "Common Contracts: ES ($50/pt), NQ ($20/pt), GC ($100/oz), CL ($1000/pt)",
                             size=11,
                             italic=True,
-                            color=ft.colors.PRIMARY
+                            color=ft.Colors.PRIMARY
                         )
                     )
                 ]
@@ -120,7 +120,7 @@ class FuturesView(BaseTradingView):
     def build_percentage_fields(self) -> ft.Control:
         """Build fields for percentage-based risk method."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             margin=ft.margin.only(bottom=10),
@@ -130,14 +130,14 @@ class FuturesView(BaseTradingView):
                     ft.TextField(
                         label="Risk Percentage",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        suffix_text="%",
+                        suffix="%",
                         hint_text="e.g., 2.0",
                         on_change=lambda e: self.on_field_changed('risk_percentage', e.control.value)
                     ),
                     ft.TextField(
                         label="Stop Loss Price",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         on_change=lambda e: self.on_field_changed('stop_loss_price', e.control.value)
                     )
                 ]
@@ -147,7 +147,7 @@ class FuturesView(BaseTradingView):
     def build_fixed_amount_fields(self) -> ft.Control:
         """Build fields for fixed amount risk method."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             margin=ft.margin.only(bottom=10),
@@ -157,14 +157,14 @@ class FuturesView(BaseTradingView):
                     ft.TextField(
                         label="Fixed Risk Amount",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         hint_text="e.g., 200",
                         on_change=lambda e: self.on_field_changed('fixed_risk_amount', e.control.value)
                     ),
                     ft.TextField(
                         label="Stop Loss Price",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         on_change=lambda e: self.on_field_changed('stop_loss_price', e.control.value)
                     )
                 ]
@@ -174,7 +174,7 @@ class FuturesView(BaseTradingView):
     def build_level_based_fields(self) -> ft.Control:
         """Build fields for level-based risk method."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             margin=ft.margin.only(bottom=10),
@@ -184,7 +184,7 @@ class FuturesView(BaseTradingView):
                     ft.TextField(
                         label="Support/Resistance Level",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         hint_text="Key price level",
                         on_change=lambda e: self.on_field_changed('support_resistance_level', e.control.value)
                     ),
@@ -194,7 +194,7 @@ class FuturesView(BaseTradingView):
                             "Position size calculated based on ticks to support/resistance level",
                             size=11,
                             italic=True,
-                            color=ft.colors.SECONDARY
+                            color=ft.Colors.SECONDARY
                         )
                     )
                 ]

@@ -23,7 +23,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "flet>=0.25.0",
+    "flet[all]>=0.25.0",
 ]
 
 [project.optional-dependencies]

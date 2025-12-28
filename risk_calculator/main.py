@@ -76,7 +76,7 @@ def main_app(page: ft.Page):
 
     # Set theme
     page.theme = ft.Theme(
-        color_scheme_seed=ft.colors.BLUE,
+        color_scheme_seed=ft.Colors.BLUE,
         use_material3=True
     )
 
@@ -112,8 +112,8 @@ def main_app(page: ft.Page):
             ft.Container(
                 padding=20,
                 content=ft.Column([
-                    ft.Text("Application Error", size=20, weight=ft.FontWeight.BOLD, color=ft.colors.ERROR),
-                    ft.Text(f"Failed to start: {str(e)}", color=ft.colors.ERROR),
+                    ft.Text("Application Error", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.ERROR),
+                    ft.Text(f"Failed to start: {str(e)}", color=ft.Colors.ERROR),
                     ft.Text("Check the log file for details.", size=12, italic=True)
                 ])
             )
@@ -131,8 +131,9 @@ def run_app(debug: bool = False):
     logger = logging.getLogger(__name__)
 
     try:
-        # Run Flet app
-        ft.app(target=main_app)
+        # Run Flet app in web browser (avoids libmpv dependency on Linux)
+        logger.info("Starting Flet in web browser mode on http://localhost:8550")
+        ft.app(target=main_app, view=ft.AppView.WEB_BROWSER, port=8550)
         logger.info("Application closed normally")
         return 0
 

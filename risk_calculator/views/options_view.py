@@ -22,7 +22,7 @@ class OptionsView(BaseTradingView):
     def build_trade_parameters(self) -> ft.Control:
         """Build options-specific input fields."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             margin=ft.margin.only(bottom=10),
@@ -33,7 +33,7 @@ class OptionsView(BaseTradingView):
                         ref=self.account_size_ref,
                         label="Account Size ($)",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         on_change=lambda e: self.on_field_changed('account_size', e.control.value)
                     ),
                     ft.TextField(
@@ -47,7 +47,7 @@ class OptionsView(BaseTradingView):
                         ref=self.premium_ref,
                         label="Premium per Share",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         hint_text="Option price",
                         on_change=lambda e: self.on_field_changed('premium', e.control.value)
                     ),
@@ -80,7 +80,7 @@ class OptionsView(BaseTradingView):
                             "Note: Options risk is limited to the premium paid (for buyers)",
                             size=11,
                             italic=True,
-                            color=ft.colors.PRIMARY
+                            color=ft.Colors.PRIMARY
                         )
                     )
                 ]
@@ -90,7 +90,7 @@ class OptionsView(BaseTradingView):
     def build_risk_method_selector(self) -> ft.Control:
         """Build risk method selector with level-based disabled."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             margin=ft.margin.only(bottom=10),
@@ -116,7 +116,7 @@ class OptionsView(BaseTradingView):
                             "Level-based method not applicable to options trading",
                             size=11,
                             italic=True,
-                            color=ft.colors.SECONDARY
+                            color=ft.Colors.SECONDARY
                         )
                     )
                 ]
@@ -135,7 +135,7 @@ class OptionsView(BaseTradingView):
     def build_percentage_fields(self) -> ft.Control:
         """Build fields for percentage-based risk method."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             margin=ft.margin.only(bottom=10),
@@ -145,7 +145,7 @@ class OptionsView(BaseTradingView):
                     ft.TextField(
                         label="Risk Percentage",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        suffix_text="%",
+                        suffix="%",
                         hint_text="e.g., 2.0",
                         on_change=lambda e: self.on_field_changed('risk_percentage', e.control.value)
                     ),
@@ -155,7 +155,7 @@ class OptionsView(BaseTradingView):
                             "Contracts = (Account × Risk%) / (Premium × Multiplier)",
                             size=11,
                             italic=True,
-                            color=ft.colors.SECONDARY
+                            color=ft.Colors.SECONDARY
                         )
                     )
                 ]
@@ -165,7 +165,7 @@ class OptionsView(BaseTradingView):
     def build_fixed_amount_fields(self) -> ft.Control:
         """Build fields for fixed amount risk method."""
         return ft.Container(
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(1, ft.Colors.OUTLINE),
             border_radius=5,
             padding=10,
             margin=ft.margin.only(bottom=10),
@@ -175,7 +175,7 @@ class OptionsView(BaseTradingView):
                     ft.TextField(
                         label="Fixed Risk Amount",
                         keyboard_type=ft.KeyboardType.NUMBER,
-                        prefix_text="$",
+                        prefix="$",
                         hint_text="e.g., 200",
                         on_change=lambda e: self.on_field_changed('fixed_risk_amount', e.control.value)
                     ),
@@ -185,7 +185,7 @@ class OptionsView(BaseTradingView):
                             "Contracts = Fixed Risk / (Premium × Multiplier)",
                             size=11,
                             italic=True,
-                            color=ft.colors.SECONDARY
+                            color=ft.Colors.SECONDARY
                         )
                     )
                 ]
