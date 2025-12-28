@@ -63,23 +63,32 @@ class MainView:
                         ),
                     ])
                 ),
-                # Tabs
+                # Tabs (using TabBar + TabBarView pattern for Flet 0.80.0)
                 ft.Tabs(
                     ref=self.tabs_ref,
                     selected_index=0,
-                    animation_duration=300,
+                    length=3,  # Must match number of tabs
                     expand=True,
-                    tabs=[
-                        ft.Tab(
-                            content=self.equity_view.build()
-                        ),
-                        ft.Tab(
-                            content=self.options_view.build()
-                        ),
-                        ft.Tab(
-                            content=self.futures_view.build()
-                        ),
-                    ],
+                    content=ft.Column(
+                        expand=True,
+                        controls=[
+                            ft.TabBar(
+                                tabs=[
+                                    ft.Tab(label="Equity Trading", icon=ft.Icons.SHOW_CHART),
+                                    ft.Tab(label="Options Trading", icon=ft.Icons.CANDLESTICK_CHART),
+                                    ft.Tab(label="Futures Trading", icon=ft.Icons.TRENDING_UP),
+                                ]
+                            ),
+                            ft.TabBarView(
+                                expand=True,
+                                controls=[
+                                    self.equity_view.build(),
+                                    self.options_view.build(),
+                                    self.futures_view.build(),
+                                ],
+                            ),
+                        ],
+                    ),
                     on_change=self.on_tab_changed
                 ),
                 # Status bar
