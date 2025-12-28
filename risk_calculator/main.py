@@ -1,7 +1,19 @@
 """Main application entry point with cross-platform Tkinter setup."""
 
+# Linux X11/XCB threading fix - must be before tkinter import
 import sys
 import os
+
+if sys.platform.startswith('linux'):
+    # Initialize X11 threading to prevent XCB errors
+    try:
+        import ctypes
+        x11 = ctypes.cdll.LoadLibrary('libX11.so.6')
+        x11.XInitThreads()
+    except (OSError, AttributeError):
+        # If X11 library not available or XInitThreads fails, continue anyway
+        pass
+
 import tkinter as tk
 from tkinter import messagebox
 import logging
