@@ -1,6 +1,5 @@
 """Option controller with level-based method disabled and contract calculations."""
 
-import tkinter as tk
 from decimal import Decimal
 from typing import Optional, Dict, List
 from .base_controller import BaseController
@@ -25,26 +24,25 @@ class OptionController(BaseController):
         # Initialize trade object
         self.trade = OptionTrade()
 
-        # Initialize Tkinter variables
-        self.tk_vars: Dict[str, tk.StringVar] = {
-            'account_size': tk.StringVar(),
-            'risk_method': tk.StringVar(value=RiskMethod.PERCENTAGE.value),
-            'risk_percentage': tk.StringVar(),
-            'fixed_risk_amount': tk.StringVar(),
-            'option_symbol': tk.StringVar(),
-            'premium': tk.StringVar(),
-            'contract_multiplier': tk.StringVar(value='100'),  # Standard options multiplier
-            'trade_direction': tk.StringVar(value='LONG')
-        }
-
-        # Call parent constructor which will setup view bindings
+        # Call parent constructor first
         super().__init__(view)
 
+        # Initialize field values with defaults
+        self.field_values = {
+            'account_size': '',
+            'risk_method': RiskMethod.PERCENTAGE.value,
+            'risk_percentage': '',
+            'fixed_risk_amount': '',
+            'option_symbol': '',
+            'premium': '',
+            'contract_multiplier': '100',  # Standard options multiplier
+            'trade_direction': 'LONG'
+        }
+
     def _setup_view_bindings(self) -> None:
-        """Setup Tkinter variable bindings and event handlers."""
-        # Bind variable traces for real-time validation
-        for var_name, var in self.tk_vars.items():
-            var.trace_add('write', lambda *args, vn=var_name: self._on_field_change(vn))
+        """Setup view bindings and event handlers."""
+        # View will call set_field_value which triggers validation
+        pass
 
     def get_required_fields(self) -> List[str]:
         """Return list of required fields based on current risk method."""
@@ -107,35 +105,35 @@ class OptionController(BaseController):
             self.set_busy_state(False)
 
     def _sync_to_trade_object(self) -> None:
-        """Sync Tkinter variables to option trade object."""
+        """Sync field values to option trade object."""
         try:
             # Common fields
-            account_size_str = self.tk_vars['account_size'].get().strip()
+            account_size_str = self.field_values.get('account_size', '').strip()
             if account_size_str:
                 self.trade.account_size = Decimal(account_size_str)
 
-            self.trade.risk_method = RiskMethod(self.tk_vars['risk_method'].get())
-            self.trade.option_symbol = self.tk_vars['option_symbol'].get().strip()
-            self.trade.trade_direction = self.tk_vars['trade_direction'].get()
+            self.trade.risk_method = RiskMethod(self.field_values.get('risk_method', RiskMethod.PERCENTAGE.value))
+            self.trade.option_symbol = self.field_values.get('option_symbol', '').strip()
+            self.trade.trade_direction = self.field_values.get('trade_direction', 'LONG')
 
             # Premium
-            premium_str = self.tk_vars['premium'].get().strip()
+            premium_str = self.field_values.get('premium', '').strip()
             if premium_str:
                 self.trade.premium = Decimal(premium_str)
 
             # Contract multiplier
-            multiplier_str = self.tk_vars['contract_multiplier'].get().strip()
+            multiplier_str = self.field_values.get('contract_multiplier', '').strip()
             if multiplier_str:
                 self.trade.contract_multiplier = int(multiplier_str)
 
             # Method-specific fields
             if self.trade.risk_method == RiskMethod.PERCENTAGE:
-                risk_pct_str = self.tk_vars['risk_percentage'].get().strip()
+                risk_pct_str = self.field_values.get('risk_percentage', '').strip()
                 if risk_pct_str:
                     self.trade.risk_percentage = Decimal(risk_pct_str)
 
             elif self.trade.risk_method == RiskMethod.FIXED_AMOUNT:
-                fixed_amount_str = self.tk_vars['fixed_risk_amount'].get().strip()
+                fixed_amount_str = self.field_values.get('fixed_risk_amount', '').strip()
                 if fixed_amount_str:
                     self.trade.fixed_risk_amount = Decimal(fixed_amount_str)
 
@@ -199,8 +197,7 @@ class OptionController(BaseController):
         # Prevent switching to level-based method
         if new_method == RiskMethod.LEVEL_BASED:
             # Revert to previous method
-            if hasattr(self, 'tk_vars') and 'risk_method' in self.tk_vars:
-                self.tk_vars['risk_method'].set(old_method.value)
+            self.field_values['risk_method'] = old_method.value
             self.current_risk_method = old_method
 
             # Show error
@@ -216,8 +213,7 @@ class OptionController(BaseController):
         # Clear old method fields
         if old_method in method_fields:
             for field in method_fields[old_method]:
-                if field in self.tk_vars:
-                    self.tk_vars[field].set('')
+                self.field_values[field] = ''
 
         # Update trade object
         self.trade.risk_method = new_method
@@ -267,11 +263,10 @@ class OptionController(BaseController):
                 'fixed_risk_amount': 'fixed_risk_amount'
             }
 
-            for data_key, var_name in field_mapping.items():
+            for data_key, field_name in field_mapping.items():
                 if data_key in trade_data and trade_data[data_key] is not None:
                     value = str(trade_data[data_key])
-                    if var_name in self.tk_vars:
-                        self.tk_vars[var_name].set(value)
+                    self.set_field_value(field_name, value)
 
         except Exception as e:
             # If loading fails, reset to defaults

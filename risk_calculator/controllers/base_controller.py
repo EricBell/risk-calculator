@@ -1,8 +1,7 @@
 """Base controller with common functionality for all controllers."""
 
-import tkinter as tk
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Callable
 from ..models.validation_result import ValidationResult
 from ..models.risk_method import RiskMethod
 
@@ -18,13 +17,32 @@ class BaseController(ABC):
         self.validation_result: Optional[ValidationResult] = None
         self.current_risk_method: RiskMethod = RiskMethod.PERCENTAGE  # Default method
 
-        # Initialize after subclass sets up tk_vars
+        # Framework-agnostic field storage
+        self.field_values: Dict[str, str] = {}
+        self.field_callbacks: Dict[str, List[Callable]] = {}
+
+        # Initialize after subclass sets up field values
         self._setup_view_bindings()
 
     @abstractmethod
     def _setup_view_bindings(self) -> None:
-        """Setup Tkinter variable bindings and event handlers."""
+        """Setup view bindings and event handlers."""
         pass
+
+    def get_field_value(self, field_name: str) -> str:
+        """Get the current value of a field."""
+        return self.field_values.get(field_name, '')
+
+    def set_field_value(self, field_name: str, value: str) -> None:
+        """Set the value of a field and trigger callbacks."""
+        self.field_values[field_name] = value
+        self._on_field_change(field_name)
+
+    def register_field_callback(self, field_name: str, callback: Callable) -> None:
+        """Register a callback for field changes."""
+        if field_name not in self.field_callbacks:
+            self.field_callbacks[field_name] = []
+        self.field_callbacks[field_name].append(callback)
 
     @abstractmethod
     def get_required_fields(self) -> List[str]:
@@ -42,9 +60,8 @@ class BaseController(ABC):
         old_method = self.current_risk_method
         self.current_risk_method = method
 
-        # Update Tkinter variable if it exists
-        if hasattr(self, 'tk_vars') and 'risk_method' in self.tk_vars:
-            self.tk_vars['risk_method'].set(method.value)
+        # Update field value
+        self.field_values['risk_method'] = method.value
 
         # Update UI field visibility
         if hasattr(self.view, 'show_method_fields'):
@@ -59,11 +76,11 @@ class BaseController(ABC):
 
     def clear_inputs(self) -> None:
         """Clear all input fields while preserving risk method selection."""
-        if hasattr(self, 'tk_vars'):
-            # Clear all variables except risk_method
-            for var_name, var in self.tk_vars.items():
-                if var_name != 'risk_method':
-                    var.set('')
+        # Clear all field values except risk_method
+        risk_method_value = self.field_values.get('risk_method', '')
+        self.field_values.clear()
+        if risk_method_value:
+            self.field_values['risk_method'] = risk_method_value
 
         # Reset trade object to defaults
         self._reset_trade_object()
@@ -76,29 +93,31 @@ class BaseController(ABC):
         if hasattr(self.view, 'clear_all_inputs'):
             self.view.clear_all_inputs()
 
-    def _on_field_change(self, var_name: str, *args) -> None:
-        """Handle Tkinter variable change for real-time validation."""
-        if not hasattr(self, 'tk_vars') or var_name not in self.tk_vars:
-            return
-
+    def _on_field_change(self, field_name: str) -> None:
+        """Handle field value change for real-time validation."""
         # Get current value
-        current_value = self.tk_vars[var_name].get()
+        current_value = self.field_values.get(field_name, '')
 
         # Perform real-time validation
-        error_message = self._validate_single_field(var_name, current_value)
+        error_message = self._validate_single_field(field_name, current_value)
 
         # Update field error display
         if error_message:
-            self._show_field_error(var_name, error_message)
+            self._show_field_error(field_name, error_message)
             self.has_errors = True
         else:
-            self._clear_field_error(var_name)
+            self._clear_field_error(field_name)
 
         # Update overall validation status
         self._update_validation_status()
 
         # Update calculate button state
         self._update_calculate_button_state()
+
+        # Trigger registered callbacks
+        if field_name in self.field_callbacks:
+            for callback in self.field_callbacks[field_name]:
+                callback(current_value)
 
     def _validate_single_field(self, field_name: str, value: str) -> Optional[str]:
         """Validate a single field and return error message if invalid."""
@@ -142,15 +161,11 @@ class BaseController(ABC):
 
     def _are_required_fields_filled(self) -> bool:
         """Check if all required fields for current method are filled."""
-        if not hasattr(self, 'tk_vars'):
-            return False
-
         required_fields = self.get_required_fields()
         for field_name in required_fields:
-            if field_name in self.tk_vars:
-                value = self.tk_vars[field_name].get().strip()
-                if not value:
-                    return False
+            value = self.field_values.get(field_name, '').strip()
+            if not value:
+                return False
 
         return True
 
@@ -190,5 +205,5 @@ class BaseController(ABC):
 
     @abstractmethod
     def _sync_to_trade_object(self) -> None:
-        """Sync Tkinter variables to trade object (implemented by subclasses)."""
+        """Sync field values to trade object (implemented by subclasses)."""
         pass

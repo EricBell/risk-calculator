@@ -1,6 +1,5 @@
 """Main controller for tab management and application coordination."""
 
-import tkinter as tk
 from typing import Dict, Optional, Any
 from .equity_controller import EquityController
 from .option_controller import OptionController
@@ -206,11 +205,10 @@ class MainController:
                 all_filled = True
 
                 for field_name in required_fields:
-                    if field_name in controller.tk_vars:
-                        value = controller.tk_vars[field_name].get().strip()
-                        if not value:
-                            all_filled = False
-                            break
+                    value = controller.get_field_value(field_name).strip()
+                    if not value:
+                        all_filled = False
+                        break
 
                 validation_status[tab_name] = all_filled and not controller.has_errors
 

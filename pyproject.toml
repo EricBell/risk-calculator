@@ -22,8 +22,9 @@ classifiers = [
     "Topic :: Office/Business :: Financial :: Investment",
 ]
 
-# No runtime dependencies - using Python standard library only
-dependencies = []
+dependencies = [
+    "flet>=0.25.0",
+]
 
 [project.optional-dependencies]
 dev = [

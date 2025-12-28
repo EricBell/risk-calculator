@@ -1,6 +1,5 @@
 """Future controller with margin requirement validation and tick calculations."""
 
-import tkinter as tk
 from decimal import Decimal
 from typing import Optional, Dict, List
 from .base_controller import BaseController
@@ -25,33 +24,30 @@ class FutureController(BaseController):
         # Initialize trade object
         self.trade = FutureTrade()
 
-        # Initialize Tkinter variables
-        self.tk_vars: Dict[str, tk.StringVar] = {
-            'account_size': tk.StringVar(),
-            'risk_method': tk.StringVar(value=RiskMethod.PERCENTAGE.value),
-            'risk_percentage': tk.StringVar(),
-            'fixed_risk_amount': tk.StringVar(),
-            'contract_symbol': tk.StringVar(),
-            'entry_price': tk.StringVar(),
-            'stop_loss_price': tk.StringVar(),
-            'support_resistance_level': tk.StringVar(),
-            'tick_value': tk.StringVar(),
-            'tick_size': tk.StringVar(),
-            'margin_requirement': tk.StringVar(),
-            'trade_direction': tk.StringVar(value='LONG')
-        }
-
-        # Call parent constructor which will setup view bindings
+        # Call parent constructor first
         super().__init__(view)
 
-    def _setup_view_bindings(self) -> None:
-        """Setup Tkinter variable bindings and event handlers."""
-        # Bind variable traces for real-time validation
-        for var_name, var in self.tk_vars.items():
-            var.trace_add('write', lambda *args, vn=var_name: self._on_field_change(vn))
+        # Initialize field values with defaults
+        self.field_values = {
+            'account_size': '',
+            'risk_method': RiskMethod.PERCENTAGE.value,
+            'risk_percentage': '',
+            'fixed_risk_amount': '',
+            'contract_symbol': '',
+            'entry_price': '',
+            'stop_loss_price': '',
+            'support_resistance_level': '',
+            'tick_value': '',
+            'tick_size': '',
+            'margin_requirement': '',
+            'trade_direction': 'LONG'
+        }
 
-        # Special binding for margin requirement to validate against account size
-        self.tk_vars['margin_requirement'].trace_add('write', self._on_margin_change)
+    def _setup_view_bindings(self) -> None:
+        """Setup view bindings and event handlers."""
+        # View will call set_field_value which triggers validation
+        # Register special callback for margin requirement
+        self.register_field_callback('margin_requirement', self._on_margin_change_callback)
 
     def get_required_fields(self) -> List[str]:
         """Return list of required fields based on current risk method."""
@@ -111,56 +107,56 @@ class FutureController(BaseController):
             self.set_busy_state(False)
 
     def _sync_to_trade_object(self) -> None:
-        """Sync Tkinter variables to futures trade object."""
+        """Sync field values to futures trade object."""
         try:
             # Common fields
-            account_size_str = self.tk_vars['account_size'].get().strip()
+            account_size_str = self.field_values.get('account_size', '').strip()
             if account_size_str:
                 self.trade.account_size = Decimal(account_size_str)
 
-            self.trade.risk_method = RiskMethod(self.tk_vars['risk_method'].get())
-            self.trade.contract_symbol = self.tk_vars['contract_symbol'].get().strip()
-            self.trade.trade_direction = self.tk_vars['trade_direction'].get()
+            self.trade.risk_method = RiskMethod(self.field_values.get('risk_method', RiskMethod.PERCENTAGE.value))
+            self.trade.contract_symbol = self.field_values.get('contract_symbol', '').strip()
+            self.trade.trade_direction = self.field_values.get('trade_direction', 'LONG')
 
             # Entry price
-            entry_price_str = self.tk_vars['entry_price'].get().strip()
+            entry_price_str = self.field_values.get('entry_price', '').strip()
             if entry_price_str:
                 self.trade.entry_price = Decimal(entry_price_str)
 
             # Futures-specific fields
-            tick_value_str = self.tk_vars['tick_value'].get().strip()
+            tick_value_str = self.field_values.get('tick_value', '').strip()
             if tick_value_str:
                 self.trade.tick_value = Decimal(tick_value_str)
 
-            tick_size_str = self.tk_vars['tick_size'].get().strip()
+            tick_size_str = self.field_values.get('tick_size', '').strip()
             if tick_size_str:
                 self.trade.tick_size = Decimal(tick_size_str)
 
-            margin_str = self.tk_vars['margin_requirement'].get().strip()
+            margin_str = self.field_values.get('margin_requirement', '').strip()
             if margin_str:
                 self.trade.margin_requirement = Decimal(margin_str)
 
             # Method-specific fields
             if self.trade.risk_method == RiskMethod.PERCENTAGE:
-                risk_pct_str = self.tk_vars['risk_percentage'].get().strip()
+                risk_pct_str = self.field_values.get('risk_percentage', '').strip()
                 if risk_pct_str:
                     self.trade.risk_percentage = Decimal(risk_pct_str)
 
-                stop_loss_str = self.tk_vars['stop_loss_price'].get().strip()
+                stop_loss_str = self.field_values.get('stop_loss_price', '').strip()
                 if stop_loss_str:
                     self.trade.stop_loss_price = Decimal(stop_loss_str)
 
             elif self.trade.risk_method == RiskMethod.FIXED_AMOUNT:
-                fixed_amount_str = self.tk_vars['fixed_risk_amount'].get().strip()
+                fixed_amount_str = self.field_values.get('fixed_risk_amount', '').strip()
                 if fixed_amount_str:
                     self.trade.fixed_risk_amount = Decimal(fixed_amount_str)
 
-                stop_loss_str = self.tk_vars['stop_loss_price'].get().strip()
+                stop_loss_str = self.field_values.get('stop_loss_price', '').strip()
                 if stop_loss_str:
                     self.trade.stop_loss_price = Decimal(stop_loss_str)
 
             elif self.trade.risk_method == RiskMethod.LEVEL_BASED:
-                level_str = self.tk_vars['support_resistance_level'].get().strip()
+                level_str = self.field_values.get('support_resistance_level', '').strip()
                 if level_str:
                     self.trade.support_resistance_level = Decimal(level_str)
 
@@ -242,15 +238,12 @@ class FutureController(BaseController):
                 return abs(self.trade.entry_price - self.trade.support_resistance_level)
         return Decimal('0')
 
-    def _on_margin_change(self, *args) -> None:
+    def _on_margin_change_callback(self, value: str) -> None:
         """Handle margin requirement change with additional validation."""
-        # Standard field validation first
-        self._on_field_change('margin_requirement')
-
         # Additional margin-specific validation
         try:
-            margin_str = self.tk_vars['margin_requirement'].get().strip()
-            account_str = self.tk_vars['account_size'].get().strip()
+            margin_str = value.strip()
+            account_str = self.field_values.get('account_size', '').strip()
 
             if margin_str and account_str:
                 margin = Decimal(margin_str)
@@ -327,8 +320,7 @@ class FutureController(BaseController):
         # Clear old method fields
         if old_method in method_fields:
             for field in method_fields[old_method]:
-                if field in self.tk_vars:
-                    self.tk_vars[field].set('')
+                self.field_values[field] = ''
 
         # Update trade object
         self.trade.risk_method = new_method
@@ -386,11 +378,10 @@ class FutureController(BaseController):
                 'support_resistance_level': 'support_resistance_level'
             }
 
-            for data_key, var_name in field_mapping.items():
+            for data_key, field_name in field_mapping.items():
                 if data_key in trade_data and trade_data[data_key] is not None:
                     value = str(trade_data[data_key])
-                    if var_name in self.tk_vars:
-                        self.tk_vars[var_name].set(value)
+                    self.set_field_value(field_name, value)
 
         except Exception as e:
             # If loading fails, reset to defaults
