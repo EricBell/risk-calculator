@@ -1,20 +1,20 @@
 # Claude Code Context: Risk Calculator
 
 ## Project Overview
-Cross-platform desktop application for daytrading risk calculation using Python and Tkinter. Runs on Windows and Linux. Provides tabbed interface for calculating position sizes across equities, options, and futures based on account risk tolerance.
+Cross-platform desktop application for daytrading risk calculation using Python and Flet. Runs on Windows and Linux. Provides tabbed interface for calculating position sizes across equities, options, and futures based on account risk tolerance.
 
 ## Tech Stack
 - **Language**: Python 3.12+
-- **UI Framework**: Tkinter (Python standard library)
+- **UI Framework**: Flet (Flutter-based Python framework with Material Design 3)
 - **Architecture**: MVC with separation of concerns
 - **Testing**: pytest with unittest.mock
 - **Target**: Windows 10+ and Linux desktop application
 
 ## Key Dependencies
-- Python 3.12+ standard library (tkinter, decimal, dataclasses, typing)
+- Python 3.12+ standard library (decimal, dataclasses, typing)
+- Flet 0.25.0+ (modern Python GUI framework)
 - pytest (testing framework)
 - pytest-mock (mocking for tests)
-- PyInstaller (deployment packaging)
 
 ## Package Management
 - **Tool**: UV (modern Python package manager)
@@ -24,22 +24,22 @@ Cross-platform desktop application for daytrading risk calculation using Python 
 ## Project Structure
 ```
 risk_calculator/
-├── main.py                    # Application entry point
+├── main.py                    # Flet application entry point
 ├── models/                    # Trade data models (EquityTrade, OptionTrade, FutureTrade)
-├── views/                     # Tkinter UI components and windows
-├── controllers/               # Application controllers and event handling
+├── views/                     # Flet UI components and views
+├── controllers/               # Framework-agnostic controllers with dict-based state
 ├── services/                  # Risk calculation and validation services
-└── tests/                     # Unit and integration tests
+└── tests/                     # Contract and integration tests
 ```
 
 ## Current Status
-**Phase**: Planning Complete (001-create-a-windows branch)
-**Artifacts Generated**:
-- Feature specification with acceptance criteria
-- Technical research and architecture decisions
-- Data model design with entity relationships
-- Service contracts and API specifications
-- Quickstart implementation guide
+**Phase**: Flet Migration Complete
+**Completed**:
+- Migrated from Tkinter to Flet framework
+- Refactored controllers to be framework-agnostic
+- Implemented Material Design 3 UI
+- All business logic preserved and tested
+- Cross-platform compatibility maintained
 
 ## Key Features
 1. **Tabbed Interface**: Separate tabs for Equities, Options, Futures
@@ -54,7 +54,9 @@ risk_calculator/
 - **Futures**: Contracts = (Account × Risk%) / (TickValue × TicksAtRisk)
 
 ## Next Steps
-Ready for `/tasks` command to generate implementation tasks from design artifacts.
+- Build standalone executables using `flet build windows` and `flet build linux`
+- Update integration and contract tests for Flet framework
+- Deploy to production environments
 
 ## Developer Workflow (UV)
 
@@ -94,7 +96,11 @@ uv lock
 
 ### Building and Packaging
 ```bash
-# Build distribution packages
+# Build standalone executables
+flet build windows    # For Windows 11
+flet build linux      # For Linux
+
+# Build Python distribution packages
 uv build
 
 # Install in editable mode for development
@@ -102,7 +108,8 @@ uv pip install -e .
 ```
 
 ## Recent Changes
+- 2025-12-28: Migrated UI framework from Tkinter to Flet with Material Design 3
+- 2025-12-28: Refactored controllers to be framework-agnostic (dict-based state)
 - 2025-12-28: Migrated to UV for package management with pyproject.toml
 - 2025-09-18: Updated specifications from Windows-only C#/.NET to cross-platform Python
 - 2025-09-17: Initial feature specification and planning complete
-- 2025-09-17: Architecture research and technology stack decisions

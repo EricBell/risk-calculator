@@ -6,12 +6,12 @@ from .options_view import OptionsView
 from .futures_view import FuturesView
 
 
-class MainView(ft.UserControl):
+class MainView:
     """Main application view with tabs for different trading instruments."""
 
     def __init__(self, main_controller=None):
-        super().__init__()
         self.main_controller = main_controller
+        self.page = None
 
         # Create individual views
         self.equity_view = None
@@ -26,6 +26,7 @@ class MainView(ft.UserControl):
         # Refs
         self.tabs_ref = ft.Ref[ft.Tabs]()
         self.status_text_ref = ft.Ref[ft.Text]()
+        self.container_ref = ft.Ref[ft.Column]()
 
     def build(self):
         """Build the main view structure."""
@@ -46,6 +47,7 @@ class MainView(ft.UserControl):
             self.futures_view.controller = self.futures_controller
 
         return ft.Column(
+            ref=self.container_ref,
             expand=True,
             controls=[
                 # Title bar
@@ -71,17 +73,17 @@ class MainView(ft.UserControl):
                         ft.Tab(
                             text="Equity Trading",
                             icon=ft.icons.SHOW_CHART,
-                            content=self.equity_view
+                            content=self.equity_view.build()
                         ),
                         ft.Tab(
                             text="Options Trading",
                             icon=ft.icons.FUNCTIONS,
-                            content=self.options_view
+                            content=self.options_view.build()
                         ),
                         ft.Tab(
                             text="Futures Trading",
                             icon=ft.icons.TRENDING_UP,
-                            content=self.futures_view
+                            content=self.futures_view.build()
                         ),
                     ],
                     on_change=self.on_tab_changed
@@ -118,13 +120,15 @@ class MainView(ft.UserControl):
             if self.status_text_ref.current:
                 tab_labels = ['Equity Trading', 'Options Trading', 'Futures Trading']
                 self.status_text_ref.current.value = f"{tab_labels[tab_index]} - Ready"
-                self.update()
+                if self.page:
+                    self.page.update()
 
     def show_status(self, message: str):
         """Update status bar message."""
         if self.status_text_ref.current:
             self.status_text_ref.current.value = message
-            self.update()
+            if self.page:
+                self.page.update()
 
     def get_current_tab(self) -> str:
         """Get the name of the currently selected tab."""
@@ -139,4 +143,5 @@ class MainView(ft.UserControl):
         tab_map = {'equity': 0, 'options': 1, 'option': 1, 'futures': 2, 'future': 2}
         if self.tabs_ref.current and tab_name in tab_map:
             self.tabs_ref.current.selected_index = tab_map[tab_name]
-            self.update()
+            if self.page:
+                self.page.update()

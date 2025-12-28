@@ -256,4 +256,5 @@ class FuturesView(BaseTradingView):
             self.trade_direction_ref.current.value = "LONG"
 
         self.clear_results()
-        self.update()
+        if self.page:
+            self.page.update()

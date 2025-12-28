@@ -6,23 +6,27 @@ from typing import Dict, Optional
 from ..models.risk_method import RiskMethod
 
 
-class BaseTradingView(ft.UserControl, ABC):
+class BaseTradingView(ABC):
     """Base Flet view component for all trading tabs."""
 
     def __init__(self, controller=None):
-        super().__init__()
         self.controller = controller
         self.validation_errors: Dict[str, str] = {}
         self.current_method = RiskMethod.PERCENTAGE
+        self.page: Optional[ft.Page] = None
 
         # Refs for dynamic controls
         self.result_text_ref = ft.Ref[ft.TextField]()
         self.calculate_button_ref = ft.Ref[ft.ElevatedButton]()
         self.method_fields_ref = ft.Ref[ft.Container]()
 
+        # Main container ref
+        self.container_ref = ft.Ref[ft.Container]()
+
     def build(self):
         """Build the main view structure."""
         return ft.Container(
+            ref=self.container_ref,
             padding=10,
             expand=True,
             content=ft.Column(
@@ -152,7 +156,8 @@ class BaseTradingView(ft.UserControl, ABC):
         # Update method-specific fields
         if self.method_fields_ref.current:
             self.method_fields_ref.current.content = self.build_method_fields()
-            self.update()
+            if self.page:
+                self.page.update()
 
     def on_calculate_clicked(self, e: ft.ControlEvent):
         """Handle calculate button click."""
@@ -170,27 +175,31 @@ class BaseTradingView(ft.UserControl, ABC):
         self.current_method = method
         if self.method_fields_ref.current:
             self.method_fields_ref.current.content = self.build_method_fields()
-            self.update()
+            if self.page:
+                self.page.update()
 
     def show_validation_errors(self, errors: Dict[str, str]):
         """Display validation errors."""
         self.validation_errors = errors
         # Errors are displayed inline via TextField.error_text
         # This would be called by controller to update specific field errors
-        self.update()
+        if self.page:
+            self.page.update()
 
     def clear_field_error(self, field_name: str):
         """Clear error for a specific field."""
         if field_name in self.validation_errors:
             del self.validation_errors[field_name]
-        self.update()
+        if self.page:
+            self.page.update()
 
     def show_calculation_result(self, result_data: Dict):
         """Display calculation results."""
         if self.result_text_ref.current:
             formatted_result = self.format_calculation_result(result_data)
             self.result_text_ref.current.value = formatted_result
-            self.update()
+            if self.page:
+                self.page.update()
 
     @abstractmethod
     def format_calculation_result(self, result_data: Dict) -> str:
@@ -201,7 +210,8 @@ class BaseTradingView(ft.UserControl, ABC):
         """Display calculation error."""
         if self.result_text_ref.current:
             self.result_text_ref.current.value = f"ERROR: {error_message}"
-            self.update()
+            if self.page:
+                self.page.update()
 
     def show_warnings(self, warnings: list):
         """Display warnings."""
@@ -209,29 +219,34 @@ class BaseTradingView(ft.UserControl, ABC):
             current = self.result_text_ref.current.value or ""
             warning_text = "\n\nWARNINGS:\n" + "\n".join(f"⚠ {w}" for w in warnings)
             self.result_text_ref.current.value = current + warning_text
-            self.update()
+            if self.page:
+                self.page.update()
 
     def clear_results(self):
         """Clear calculation results."""
         if self.result_text_ref.current:
             self.result_text_ref.current.value = ""
-            self.update()
+            if self.page:
+                self.page.update()
 
     def set_busy_state(self, is_busy: bool):
         """Set busy state during calculations."""
         if self.calculate_button_ref.current:
             self.calculate_button_ref.current.disabled = is_busy
             self.calculate_button_ref.current.text = "Calculating..." if is_busy else "Calculate Position"
-            self.update()
+            if self.page:
+                self.page.update()
 
     def set_calculate_button_enabled(self, enabled: bool):
         """Enable/disable calculate button."""
         if self.calculate_button_ref.current:
             self.calculate_button_ref.current.disabled = not enabled
-            self.update()
+            if self.page:
+                self.page.update()
 
     def clear_all_inputs(self):
         """Clear all input fields (called by controller)."""
         # Subclasses can override to clear specific fields
         self.clear_results()
-        self.update()
+        if self.page:
+            self.page.update()

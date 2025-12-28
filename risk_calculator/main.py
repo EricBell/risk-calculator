@@ -86,8 +86,21 @@ def main_app(page: ft.Page):
         main_controller = MainController(main_view)
         main_view.main_controller = main_controller
 
-        # Add main view to page
-        page.add(main_view)
+        # Wire up page reference
+        main_view.page = page
+
+        # Build and add main view to page
+        main_container = main_view.build()
+        page.add(main_container)
+
+        # Wire up page references to child views after build
+        if main_view.equity_view:
+            main_view.equity_view.page = page
+        if main_view.options_view:
+            main_view.options_view.page = page
+        if main_view.futures_view:
+            main_view.futures_view.page = page
+
         page.update()
 
         logger.info("Application initialized successfully")
