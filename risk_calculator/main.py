@@ -131,8 +131,9 @@ def run_app(debug: bool = False):
     logger = logging.getLogger(__name__)
 
     try:
-        # Run Flet app in web browser (avoids libmpv dependency on Linux)
-        logger.info("Starting Flet in web browser mode on http://localhost:8550")
+        # Run Flet in web browser (works on all systems, no native dependencies)
+        logger.info("Starting Risk Calculator application")
+        logger.info("Application will open in your default web browser at http://localhost:8550")
         ft.app(target=main_app, view=ft.AppView.WEB_BROWSER, port=8550)
         logger.info("Application closed normally")
         return 0
